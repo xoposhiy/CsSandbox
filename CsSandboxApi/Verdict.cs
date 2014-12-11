@@ -7,6 +7,7 @@
 		RuntimeError,
 		SecurityException,
 		SandboxError,
-		Ok,
+		OutputLimit,
+		Ok
 	}
 }

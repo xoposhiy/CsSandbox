@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CsSandboxApi;
 using NUnit.Framework;
 
@@ -12,6 +11,7 @@ namespace CsSandboxTests
 		[TestCase(@"using System; class M{static void Main(){System.Console.WriteLine(Tuple.Create(1, 2));}}", "", "(1, 2)\r\n", "")]
 		[TestCase(@"using System; public class M{static public void Main(){System.Console.Error.WriteLine(42);}}", "", "", "42\r\n")]
 		[TestCase(@"using System; public class M{static public void Main(){System.Console.WriteLine(Console.ReadLine());}}", "asdfasdf", "asdfasdf\r\n", "")]
+		[TestCase(@"using System; class M{static void Main(){ try{throw new Exception();}catch{Console.WriteLine('!');}}}", "", "!\r\n", "")]
 		public static async void TestOk(string code, string input, string output, string error)
 		{
 			var details = await GetDetails(code, input);
@@ -38,7 +38,7 @@ namespace CsSandboxTests
 			Assert.IsNullOrEmpty(details.Error);
 		}
 
-		[TestCase("using System; namespace Test { public class Program { static public void Main() { if (1 + 1 == 2) throw new Exception(); } } }")]
+		[TestCase("using System; namespace Test { public class Program { static public void Main() { if (1 + 1 == 2) throw new Exception();}}}")]
 		public static async void TestRuntimeError(string code)
 		{
 			var details = await GetDetails(code, "");
@@ -47,6 +47,27 @@ namespace CsSandboxTests
 			Assert.IsNotNullOrEmpty(details.Error);
 		}
 
+		[TestCase("using System; class Program { static void Main() { var s = new string('*', 4000); Console.WriteLine(s); }}")]
+		[TestCase("using System; class Program { static void Main() { var s = new string('*', 4000); Console.Write(s); Console.WriteLine(); }}")]
+		public static async void TestOutputLimitError(string code)
+		{
+			var details = await GetDetails(code, "");
+
+			Assert.AreEqual(Verdict.Ok, details.Verdict);
+			Assert.IsNotNullOrEmpty(details.Error);
+			Assert.AreEqual(new string('*', 4000), details.Output);
+		}
+
+		[TestCase(@"using System; class Program { static void Main() { var s = new string('*', 4000); Console.Write(s); }}")]
+		public static async void TestOutputLimit(string code)
+		{
+			var details = await GetDetails(code, "");
+
+			Assert.AreEqual(Verdict.Ok, details.Verdict);
+			Assert.AreEqual(new string('*', 4000), details.Output);
+			Assert.IsNullOrEmpty(details.Error);
+			Assert.IsNullOrEmpty(details.CompilationError);
+		}
 
 		private static async Task<PublicSubmissionDetails> GetDetails(string code, string input)
 		{
