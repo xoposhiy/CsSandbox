@@ -3,7 +3,6 @@ using System.Data.Entity.Migrations;
 using System.Reflection;
 using System.Security;
 using CsSandbox.Models;
-using CsSandbox.Sandbox;
 using CsSandboxApi;
 
 namespace CsSandbox.DataContext
@@ -92,11 +91,6 @@ namespace CsSandbox.DataContext
 			SetExceptionResult(id, Verdict.RuntimeError, ex.ToString());
 		}
 
-		private void SetExceptionResult(string id, OutputLimitException ex)
-		{
-			SetExceptionResult(id, Verdict.OutputLimit, ex.ToString());
-		}
-
 		private void SetExceptionResult(string id, Verdict verdict, string message)
 		{
 			var submittion = db.Submission.Find(id);
@@ -119,7 +113,17 @@ namespace CsSandbox.DataContext
 			submittion.Verdict = Verdict.SandboxError;
 			submittion.Error = message;
 			db.Submission.AddOrUpdate(submittion);
-			db.SaveChanges();			
+			db.SaveChanges();
+		}
+
+		public void SetOutputLimit(string id)
+		{
+			var submittion = db.Submission.Find(id);
+			submittion.Status = SubmissionStatus.Done;
+			submittion.Verdict = Verdict.OutputLimit;
+			submittion.Error = "Слишком большой вывод";
+			db.Submission.AddOrUpdate(submittion);
+			db.SaveChanges();
 		}
 	}
 }

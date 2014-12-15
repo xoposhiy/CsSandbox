@@ -77,6 +77,13 @@ namespace CsSandbox.Sandbox
 				submissions.SetSandboxException(id, ex.ToString());
 				return;
 			}
+
+			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
+			{
+				submissions.SetOutputLimit(id);
+				return;
+			}
+
 			submissions.SetRunInfo(id, stdout.ToString(), stderr.ToString());
 		}
 

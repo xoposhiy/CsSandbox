@@ -9,12 +9,14 @@ namespace CsSandbox.Sandbox
 		private readonly int _maxLength;
 		private const int DefaultLength = 4000;
 
+		public bool HasOutputLimit { get; private set; }
+
 		public LimitedStringWriter(int maxLength = DefaultLength)
 		{
 			_maxLength = maxLength;
 		}
 
-		public LimitedStringWriter(IFormatProvider formatProvider, int maxLength) : base(formatProvider)
+		public LimitedStringWriter(IFormatProvider formatProvider, int maxLength = DefaultLength) : base(formatProvider)
 		{
 			_maxLength = maxLength;
 		}
@@ -34,8 +36,8 @@ namespace CsSandbox.Sandbox
 		{
 			if (GetStringBuilder().Length + 1 > _maxLength)
 			{
+				HasOutputLimit = true;
 				return;
-				throw new OutputLimitException();
 			}
 
 			base.Write(value);
@@ -45,8 +47,8 @@ namespace CsSandbox.Sandbox
 		{
 			if (GetStringBuilder().Length + count > _maxLength)
 			{
+				HasOutputLimit = true;
 				return;
-				throw new OutputLimitException();
 			}
 
 			base.Write(buffer, index, count);
@@ -56,9 +58,10 @@ namespace CsSandbox.Sandbox
 		{
 			if (value != null && GetStringBuilder().Length + value.Length > _maxLength)
 			{
+				HasOutputLimit = true;
 				return;
-				throw new OutputLimitException();
 			}
+
 			base.Write(value);
 		}
 	}

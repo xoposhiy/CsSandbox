@@ -53,9 +53,8 @@ namespace CsSandboxTests
 		{
 			var details = await GetDetails(code, "");
 
-			Assert.AreEqual(Verdict.Ok, details.Verdict);
+			Assert.AreEqual(Verdict.OutputLimit, details.Verdict);
 			Assert.IsNotNullOrEmpty(details.Error);
-			Assert.AreEqual(new string('*', 4000), details.Output);
 		}
 
 		[TestCase(@"using System; class Program { static void Main() { var s = new string('*', 4000); Console.Write(s); }}")]
