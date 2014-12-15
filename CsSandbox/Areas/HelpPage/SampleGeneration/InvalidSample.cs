@@ -20,7 +20,7 @@ namespace CsSandbox.Areas.HelpPage
 
         public override bool Equals(object obj)
         {
-            var other = obj as InvalidSample;
+            InvalidSample other = obj as InvalidSample;
             return other != null && ErrorMessage == other.ErrorMessage;
         }
 

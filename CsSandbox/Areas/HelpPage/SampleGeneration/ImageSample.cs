@@ -24,7 +24,7 @@ namespace CsSandbox.Areas.HelpPage
 
         public override bool Equals(object obj)
         {
-            var other = obj as ImageSample;
+            ImageSample other = obj as ImageSample;
             return other != null && Src == other.Src;
         }
 

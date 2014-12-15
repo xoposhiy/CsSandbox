@@ -31,32 +31,32 @@ namespace CsSandbox.Areas.HelpPage
             {
                 throw new ArgumentNullException("documentPath");
             }
-            var xpath = new XPathDocument(documentPath);
+            XPathDocument xpath = new XPathDocument(documentPath);
             _documentNavigator = xpath.CreateNavigator();
         }
 
         public string GetDocumentation(HttpControllerDescriptor controllerDescriptor)
         {
-            var typeNode = GetTypeNode(controllerDescriptor.ControllerType);
+            XPathNavigator typeNode = GetTypeNode(controllerDescriptor.ControllerType);
             return GetTagValue(typeNode, "summary");
         }
 
         public virtual string GetDocumentation(HttpActionDescriptor actionDescriptor)
         {
-            var methodNode = GetMethodNode(actionDescriptor);
+            XPathNavigator methodNode = GetMethodNode(actionDescriptor);
             return GetTagValue(methodNode, "summary");
         }
 
         public virtual string GetDocumentation(HttpParameterDescriptor parameterDescriptor)
         {
-            var reflectedParameterDescriptor = parameterDescriptor as ReflectedHttpParameterDescriptor;
+            ReflectedHttpParameterDescriptor reflectedParameterDescriptor = parameterDescriptor as ReflectedHttpParameterDescriptor;
             if (reflectedParameterDescriptor != null)
             {
-                var methodNode = GetMethodNode(reflectedParameterDescriptor.ActionDescriptor);
+                XPathNavigator methodNode = GetMethodNode(reflectedParameterDescriptor.ActionDescriptor);
                 if (methodNode != null)
                 {
-                    var parameterName = reflectedParameterDescriptor.ParameterInfo.Name;
-                    var parameterNode = methodNode.SelectSingleNode(String.Format(CultureInfo.InvariantCulture, ParameterExpression, parameterName));
+                    string parameterName = reflectedParameterDescriptor.ParameterInfo.Name;
+                    XPathNavigator parameterNode = methodNode.SelectSingleNode(String.Format(CultureInfo.InvariantCulture, ParameterExpression, parameterName));
                     if (parameterNode != null)
                     {
                         return parameterNode.Value.Trim();
@@ -69,31 +69,31 @@ namespace CsSandbox.Areas.HelpPage
 
         public string GetResponseDocumentation(HttpActionDescriptor actionDescriptor)
         {
-            var methodNode = GetMethodNode(actionDescriptor);
+            XPathNavigator methodNode = GetMethodNode(actionDescriptor);
             return GetTagValue(methodNode, "returns");
         }
 
         public string GetDocumentation(MemberInfo member)
         {
-            var memberName = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", GetTypeName(member.DeclaringType), member.Name);
-            var expression = member.MemberType == MemberTypes.Field ? FieldExpression : PropertyExpression;
-            var selectExpression = String.Format(CultureInfo.InvariantCulture, expression, memberName);
-            var propertyNode = _documentNavigator.SelectSingleNode(selectExpression);
+            string memberName = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", GetTypeName(member.DeclaringType), member.Name);
+            string expression = member.MemberType == MemberTypes.Field ? FieldExpression : PropertyExpression;
+            string selectExpression = String.Format(CultureInfo.InvariantCulture, expression, memberName);
+            XPathNavigator propertyNode = _documentNavigator.SelectSingleNode(selectExpression);
             return GetTagValue(propertyNode, "summary");
         }
 
         public string GetDocumentation(Type type)
         {
-            var typeNode = GetTypeNode(type);
+            XPathNavigator typeNode = GetTypeNode(type);
             return GetTagValue(typeNode, "summary");
         }
 
         private XPathNavigator GetMethodNode(HttpActionDescriptor actionDescriptor)
         {
-            var reflectedActionDescriptor = actionDescriptor as ReflectedHttpActionDescriptor;
+            ReflectedHttpActionDescriptor reflectedActionDescriptor = actionDescriptor as ReflectedHttpActionDescriptor;
             if (reflectedActionDescriptor != null)
             {
-                var selectExpression = String.Format(CultureInfo.InvariantCulture, MethodExpression, GetMemberName(reflectedActionDescriptor.MethodInfo));
+                string selectExpression = String.Format(CultureInfo.InvariantCulture, MethodExpression, GetMemberName(reflectedActionDescriptor.MethodInfo));
                 return _documentNavigator.SelectSingleNode(selectExpression);
             }
 
@@ -102,11 +102,11 @@ namespace CsSandbox.Areas.HelpPage
 
         private static string GetMemberName(MethodInfo method)
         {
-            var name = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", GetTypeName(method.DeclaringType), method.Name);
-            var parameters = method.GetParameters();
+            string name = String.Format(CultureInfo.InvariantCulture, "{0}.{1}", GetTypeName(method.DeclaringType), method.Name);
+            ParameterInfo[] parameters = method.GetParameters();
             if (parameters.Length != 0)
             {
-                var parameterTypeNames = parameters.Select(param => GetTypeName(param.ParameterType)).ToArray();
+                string[] parameterTypeNames = parameters.Select(param => GetTypeName(param.ParameterType)).ToArray();
                 name += String.Format(CultureInfo.InvariantCulture, "({0})", String.Join(",", parameterTypeNames));
             }
 
@@ -117,7 +117,7 @@ namespace CsSandbox.Areas.HelpPage
         {
             if (parentNode != null)
             {
-                var node = parentNode.SelectSingleNode(tagName);
+                XPathNavigator node = parentNode.SelectSingleNode(tagName);
                 if (node != null)
                 {
                     return node.Value.Trim();
@@ -129,24 +129,24 @@ namespace CsSandbox.Areas.HelpPage
 
         private XPathNavigator GetTypeNode(Type type)
         {
-            var controllerTypeName = GetTypeName(type);
-            var selectExpression = String.Format(CultureInfo.InvariantCulture, TypeExpression, controllerTypeName);
+            string controllerTypeName = GetTypeName(type);
+            string selectExpression = String.Format(CultureInfo.InvariantCulture, TypeExpression, controllerTypeName);
             return _documentNavigator.SelectSingleNode(selectExpression);
         }
 
         private static string GetTypeName(Type type)
         {
-            var name = type.FullName;
+            string name = type.FullName;
             if (type.IsGenericType)
             {
                 // Format the generic type name to something like: Generic{System.Int32,System.String}
-                var genericType = type.GetGenericTypeDefinition();
-                var genericArguments = type.GetGenericArguments();
-                var genericTypeName = genericType.FullName;
+                Type genericType = type.GetGenericTypeDefinition();
+                Type[] genericArguments = type.GetGenericArguments();
+                string genericTypeName = genericType.FullName;
 
                 // Trim the generic parameter counts from the name
                 genericTypeName = genericTypeName.Substring(0, genericTypeName.IndexOf('`'));
-                var argumentTypeNames = genericArguments.Select(t => GetTypeName(t)).ToArray();
+                string[] argumentTypeNames = genericArguments.Select(t => GetTypeName(t)).ToArray();
                 name = String.Format(CultureInfo.InvariantCulture, "{0}{{{1}}}", genericTypeName, String.Join(",", argumentTypeNames));
             }
             if (type.IsNested)

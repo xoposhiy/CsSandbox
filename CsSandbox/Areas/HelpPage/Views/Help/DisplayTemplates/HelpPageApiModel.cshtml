@@ -1,8 +1,11 @@
+@using System.Web.Http
+@using System.Web.Http.Description
 @using CsSandbox.Areas.HelpPage.Models
+@using CsSandbox.Areas.HelpPage.ModelDescriptions
 @model HelpPageApiModel
 
 @{
-    var description = Model.ApiDescription;
+    ApiDescription description = Model.ApiDescription;
 }
 <h1>@description.HttpMethod.Method @description.RelativePath</h1>
 <div>
