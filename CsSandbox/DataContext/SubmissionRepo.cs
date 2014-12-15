@@ -82,9 +82,9 @@ namespace CsSandbox.DataContext
 			db.SaveChanges();
 		}
 
-		public void SetExceptionResult(string id, TimeLimitException ex)
+		public void SetExceptionResult(string id, SolutionException ex)
 		{
-			SetExceptionResult(id, Verdict.TimeLimit, ex.Message);
+			SetExceptionResult(id, ex.Verdict, ex.Message);
 		}
 
 		public void SetExceptionResult(string id, SecurityException ex)
@@ -107,9 +107,14 @@ namespace CsSandbox.DataContext
 			db.SaveChanges();
 		}
 
-		public void SetExceptionResult(string id, TargetInvocationException exception)
+		public void SetExceptionResult(string id, AggregateException exception)
 		{
 			SetExceptionResult(id, (dynamic) exception.InnerException);
+		}
+
+		public void SetExceptionResult(string id, TargetInvocationException exception)
+		{
+			SetExceptionResult(id, (dynamic)exception.InnerException);
 		}
 
 		public void SetSandboxException(string id, string message)
@@ -118,16 +123,6 @@ namespace CsSandbox.DataContext
 			submittion.Status = SubmissionStatus.Done;
 			submittion.Verdict = Verdict.SandboxError;
 			submittion.Error = message;
-			db.Submission.AddOrUpdate(submittion);
-			db.SaveChanges();
-		}
-
-		public void SetOutputLimit(string id)
-		{
-			var submittion = db.Submission.Find(id);
-			submittion.Status = SubmissionStatus.Done;
-			submittion.Verdict = Verdict.OutputLimit;
-			submittion.Error = "Слишком большой вывод";
 			db.Submission.AddOrUpdate(submittion);
 			db.SaveChanges();
 		}

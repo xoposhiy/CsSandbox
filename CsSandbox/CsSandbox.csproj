@@ -211,10 +211,9 @@
     <Compile Include="Results\ChallengeResult.cs" />
     <Compile Include="Sandbox\LimitedStringWriter.cs" />
     <Compile Include="Sandbox\Sandboxer.cs" />
-    <Compile Include="Sandbox\TimeLimitException.cs" />
+    <Compile Include="Sandbox\SolutionException.cs" />
     <Compile Include="Sandbox\Worker.cs" />
     <Compile Include="Startup.cs" />
-    <Compile Include="Tests\RunTests.cs" />
     <Compile Include="Utils\Utils.cs" />
   </ItemGroup>
   <ItemGroup>

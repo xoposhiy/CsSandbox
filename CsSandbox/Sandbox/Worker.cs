@@ -3,7 +3,6 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
@@ -33,18 +32,48 @@ namespace CsSandbox.Sandbox
 
 		public void Run()
 		{
-			var provider = new CSharpCodeProvider(new Dictionary<string, string> {{"CompilerVersion", "v4.0"}});
-			var compilerParameters = new CompilerParameters
-			{
-				GenerateExecutable = true
-			};
-			var assembly = provider.CompileAssemblyFromSource(compilerParameters, _submission.Code);
-			if (WasError(assembly)) 
+			var assembly = CreateAssemby();
+
+			if (assembly == null)
 				return;
 
 			if (!_submission.NeedRun)
 				return;
 
+			var domain = CreateDomain(assembly);
+			var sandboxer = CreateSandboxer(domain);
+
+			try
+			{
+				RunSandboxer(domain, sandboxer, assembly);
+			}
+			catch (AggregateException ex)
+			{
+				_submissionsRepo.SetExceptionResult(_id, ex);
+			}
+			catch (SolutionException ex)
+			{
+				_submissionsRepo.SetExceptionResult(_id, (dynamic)ex);
+			}
+			catch (Exception ex)
+			{
+				_submissionsRepo.SetSandboxException(_id, ex.ToString());
+			}
+		}
+
+		private static Sandboxer CreateSandboxer(AppDomain domain)
+		{
+			var handle = Activator.CreateInstanceFrom(
+				domain,
+				typeof (Sandboxer).Assembly.ManifestModule.FullyQualifiedName,
+				typeof (Sandboxer).FullName
+				);
+			var sandboxer = (Sandboxer) handle.Unwrap();
+			return sandboxer;
+		}
+
+		private AppDomain CreateDomain(CompilerResults assembly)
+		{
 			var assemblyPath = Path.GetFullPath(assembly.PathToAssembly);
 			var permSet = new PermissionSet(PermissionState.None);
 			permSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution));
@@ -58,68 +87,49 @@ namespace CsSandbox.Sandbox
 			};
 
 			var domain = AppDomain.CreateDomain(_id, evidence, adSetup, permSet, fullTrustAssembly);
-
-			var handle = Activator.CreateInstanceFrom(
-				domain, 
-				typeof (Sandboxer).Assembly.ManifestModule.FullyQualifiedName,
-				typeof (Sandboxer).FullName
-				);
-			var sandboxer = (Sandboxer)handle.Unwrap();
-			var stdin = new StringReader(_submission.Input ?? "");
-			LimitedStringWriter stdout;
-			LimitedStringWriter stderr;
-
-			try
-			{
-				var streams = RunSandboxer(domain, sandboxer, assembly, stdin);
-				stdout = streams.Item1;
-				stderr = streams.Item2;
-			}
-			catch (TargetInvocationException ex)
-			{
-				_submissionsRepo.SetExceptionResult(_id, ex);
-				return;
-			}
-			catch (TimeLimitException ex)
-			{
-				_submissionsRepo.SetExceptionResult(_id, ex);
-				return;
-			}
-			catch (Exception ex)
-			{
-				_submissionsRepo.SetSandboxException(_id, ex.ToString());
-				return;
-			}
-
-			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
-			{
-				_submissionsRepo.SetOutputLimit(_id);
-				return;
-			}
-
-			_submissionsRepo.SetRunInfo(_id, stdout.ToString(), stderr.ToString());
+			return domain;
 		}
 
-		private static Tuple<LimitedStringWriter, LimitedStringWriter> RunSandboxer(AppDomain domain, Sandboxer sandboxer, CompilerResults assembly, TextReader stdin)
+		private CompilerResults CreateAssemby()
 		{
-			var task = new Task<Tuple<LimitedStringWriter, LimitedStringWriter>>(() => sandboxer.ExecuteUntrustedCode(assembly.CompiledAssembly.EntryPoint, stdin));
+			var provider = new CSharpCodeProvider(new Dictionary<string, string> {{"CompilerVersion", "v4.0"}});
+			var compilerParameters = new CompilerParameters
+			{
+				GenerateExecutable = true
+			};
+
+			var assembly = provider.CompileAssemblyFromSource(compilerParameters, _submission.Code);
+
+			return WasError(assembly) ? null : assembly;
+		}
+
+		private void RunSandboxer(AppDomain domain, Sandboxer sandboxer, CompilerResults assembly)
+		{
+			var stdin = new StringReader(_submission.Input ?? "");
+			var task =
+				new Task<Tuple<LimitedStringWriter, LimitedStringWriter>>(
+					() => sandboxer.ExecuteUntrustedCode(assembly.CompiledAssembly.EntryPoint, stdin));
 			task.Start();
+
 			var finishTime = DateTime.Now.Add(IdleTimeLimit);
-			
-			while (TimeLimit.CompareTo(domain.MonitoringTotalProcessorTime) >= 0 
+			while (!task.IsCompleted 
+				&& TimeLimit.CompareTo(domain.MonitoringTotalProcessorTime) >= 0 
 				&& finishTime.CompareTo(DateTime.Now) >= 0)
 			{
 				if (task.IsFaulted)
-					throw task.Exception.InnerException;
-				if (task.IsCompleted)
-					return task.Result;
+					throw task.Exception;
 				Thread.Sleep(100);
 			}
 
-			if (task.IsCompleted)
-				return task.Result;
-			
-			throw new TimeLimitException();
+			if (!task.IsCompleted)
+				throw new TimeLimitException();
+
+			var stdout = task.Result.Item1;
+			var stderr = task.Result.Item2;
+			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
+				throw new OutputLimitException();
+
+			_submissionsRepo.SetRunInfo(_id, stdout.ToString(), stderr.ToString());
 		}
 
 		private bool WasError(CompilerResults results)
