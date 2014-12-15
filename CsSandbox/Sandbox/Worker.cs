@@ -8,6 +8,8 @@ using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using CsSandbox.DataContext;
 using CsSandboxApi;
 using Microsoft.CSharp;
@@ -16,14 +18,17 @@ namespace CsSandbox.Sandbox
 {
 	public class Worker 
 	{
-		private readonly string id;
-		private readonly SubmissionModel submission;
-		private readonly SubmissionRepo submissions = new SubmissionRepo();
+		private readonly string _id;
+		private readonly SubmissionModel _submission;
+		private readonly SubmissionRepo _submissionsRepo = new SubmissionRepo();
+		private const int TimeLimitInSeconds = 1;
+		private static readonly TimeSpan TimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
+		private static readonly TimeSpan IdleTimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
 
 		public Worker(string id, SubmissionModel submission)
 		{
-			this.id = id;
-			this.submission = submission;
+			_id = id;
+			_submission = submission;
 		}
 
 		public void Run()
@@ -33,11 +38,11 @@ namespace CsSandbox.Sandbox
 			{
 				GenerateExecutable = true
 			};
-			var assembly = provider.CompileAssemblyFromSource(compilerParameters, submission.Code);
+			var assembly = provider.CompileAssemblyFromSource(compilerParameters, _submission.Code);
 			if (WasError(assembly)) 
 				return;
 
-			if (!submission.NeedRun)
+			if (!_submission.NeedRun)
 				return;
 
 			var assemblyPath = Path.GetFullPath(assembly.PathToAssembly);
@@ -52,7 +57,7 @@ namespace CsSandbox.Sandbox
 				ApplicationBase = Path.GetDirectoryName(assemblyPath),
 			};
 
-			var domain = AppDomain.CreateDomain(id, evidence, adSetup, permSet, fullTrustAssembly);
+			var domain = AppDomain.CreateDomain(_id, evidence, adSetup, permSet, fullTrustAssembly);
 
 			var handle = Activator.CreateInstanceFrom(
 				domain, 
@@ -60,31 +65,61 @@ namespace CsSandbox.Sandbox
 				typeof (Sandboxer).FullName
 				);
 			var sandboxer = (Sandboxer)handle.Unwrap();
-			var stdin = new StringReader(submission.Input ?? "");
-			var stdout = new LimitedStringWriter();
-			var stderr = new LimitedStringWriter();
+			var stdin = new StringReader(_submission.Input ?? "");
+			LimitedStringWriter stdout;
+			LimitedStringWriter stderr;
+
 			try
 			{
-				sandboxer.ExecuteUntrustedCode(assembly.CompiledAssembly.EntryPoint, stdin, stdout, stderr);
+				var streams = RunSandboxer(domain, sandboxer, assembly, stdin);
+				stdout = streams.Item1;
+				stderr = streams.Item2;
 			}
 			catch (TargetInvocationException ex)
 			{
-				submissions.SetExceptionResult(id, ex);
+				_submissionsRepo.SetExceptionResult(_id, ex);
+				return;
+			}
+			catch (TimeLimitException ex)
+			{
+				_submissionsRepo.SetExceptionResult(_id, ex);
 				return;
 			}
 			catch (Exception ex)
 			{
-				submissions.SetSandboxException(id, ex.ToString());
+				_submissionsRepo.SetSandboxException(_id, ex.ToString());
 				return;
 			}
 
 			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
 			{
-				submissions.SetOutputLimit(id);
+				_submissionsRepo.SetOutputLimit(_id);
 				return;
 			}
 
-			submissions.SetRunInfo(id, stdout.ToString(), stderr.ToString());
+			_submissionsRepo.SetRunInfo(_id, stdout.ToString(), stderr.ToString());
+		}
+
+		private static Tuple<LimitedStringWriter, LimitedStringWriter> RunSandboxer(AppDomain domain, Sandboxer sandboxer, CompilerResults assembly, TextReader stdin)
+		{
+			var task = new Task<Tuple<LimitedStringWriter, LimitedStringWriter>>(() => sandboxer.ExecuteUntrustedCode(assembly.CompiledAssembly.EntryPoint, stdin));
+			task.Start();
+			var finishTime = DateTime.Now.Add(IdleTimeLimit);
+			
+			while (TimeLimit.CompareTo(domain.MonitoringTotalProcessorTime) >= 0 
+				&& finishTime.CompareTo(DateTime.Now) >= 0)
+			{
+				if (task.IsFaulted)
+					throw task.Exception.InnerException;
+				if (task.IsCompleted)
+					return task.Result;
+				Thread.Sleep(100);
+			}
+
+			if (task.IsCompleted)
+				return task.Result;
+			
+			throw new TimeLimitException();
 		}
 
 		private bool WasError(CompilerResults results)
@@ -99,7 +134,7 @@ namespace CsSandbox.Sandbox
 				sb.Append(String.Format("{0} ({1}): {2}", error.IsWarning ? "Warning" : "Error", error.ErrorNumber, error.ErrorText));
 			}
 
-			submissions.SetCompilationInfo(id, results.Errors.HasErrors, sb.ToString());
+			_submissionsRepo.SetCompilationInfo(_id, results.Errors.HasErrors, sb.ToString());
 
 			return results.Errors.HasErrors;
 		}

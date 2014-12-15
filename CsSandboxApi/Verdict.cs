@@ -9,5 +9,6 @@
 		SecurityException = 4,
 		SandboxError = 5,
 		OutputLimit = 6,
+		TimeLimit = 7,
 	}
 }

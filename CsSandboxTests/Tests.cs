@@ -68,6 +68,16 @@ namespace CsSandboxTests
 			Assert.IsNullOrEmpty(details.CompilationError);
 		}
 
+		[TestCase(@"using System; class Program { static void Main() { int a = 0; while(true) { ++a; } }}")]
+		[TestCase(@"using System.Threading; class Program{ private static void Main() { Thread.Sleep(3000); }}")]
+		public static async void TestTimeLimit(string code)
+		{
+			var details = await GetDetails(code, "");
+
+			Assert.AreEqual(Verdict.TimeLimit, details.Verdict);
+			Assert.IsNotNullOrEmpty(details.Error);
+		}
+
 		private static async Task<PublicSubmissionDetails> GetDetails(string code, string input)
 		{
 			var client = new CsSandboxClient("tester");
@@ -95,3 +105,4 @@ namespace CsSandboxTests
 		}
 	}
 }
+

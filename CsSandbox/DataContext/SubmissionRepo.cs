@@ -3,6 +3,7 @@ using System.Data.Entity.Migrations;
 using System.Reflection;
 using System.Security;
 using CsSandbox.Models;
+using CsSandbox.Sandbox;
 using CsSandboxApi;
 
 namespace CsSandbox.DataContext
@@ -81,12 +82,17 @@ namespace CsSandbox.DataContext
 			db.SaveChanges();
 		}
 
-		private void SetExceptionResult(string id, SecurityException ex)
+		public void SetExceptionResult(string id, TimeLimitException ex)
+		{
+			SetExceptionResult(id, Verdict.TimeLimit, ex.Message);
+		}
+
+		public void SetExceptionResult(string id, SecurityException ex)
 		{
 			SetExceptionResult(id, Verdict.SecurityException, null);
 		}
 
-		private void SetExceptionResult(string id, Exception ex)
+		public void SetExceptionResult(string id, Exception ex)
 		{
 			SetExceptionResult(id, Verdict.RuntimeError, ex.ToString());
 		}
