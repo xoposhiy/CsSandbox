@@ -86,13 +86,13 @@ namespace CsSandbox.Areas.HelpPage.Models
 
         private static IList<ParameterDescription> GetParameterDescriptions(ModelDescription modelDescription)
         {
-            var complexTypeModelDescription = modelDescription as ComplexTypeModelDescription;
+            ComplexTypeModelDescription complexTypeModelDescription = modelDescription as ComplexTypeModelDescription;
             if (complexTypeModelDescription != null)
             {
                 return complexTypeModelDescription.Properties;
             }
 
-            var collectionModelDescription = modelDescription as CollectionModelDescription;
+            CollectionModelDescription collectionModelDescription = modelDescription as CollectionModelDescription;
             if (collectionModelDescription != null)
             {
                 complexTypeModelDescription = collectionModelDescription.ElementDescription as ComplexTypeModelDescription;

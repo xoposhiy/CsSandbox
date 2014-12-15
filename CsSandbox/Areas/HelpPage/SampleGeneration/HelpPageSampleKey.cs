@@ -132,7 +132,7 @@ namespace CsSandbox.Areas.HelpPage
 
         public override bool Equals(object obj)
         {
-            var otherKey = obj as HelpPageSampleKey;
+            HelpPageSampleKey otherKey = obj as HelpPageSampleKey;
             if (otherKey == null)
             {
                 return false;
@@ -148,7 +148,7 @@ namespace CsSandbox.Areas.HelpPage
 
         public override int GetHashCode()
         {
-            var hashCode = ControllerName.ToUpperInvariant().GetHashCode() ^ ActionName.ToUpperInvariant().GetHashCode();
+            int hashCode = ControllerName.ToUpperInvariant().GetHashCode() ^ ActionName.ToUpperInvariant().GetHashCode();
             if (MediaType != null)
             {
                 hashCode ^= MediaType.GetHashCode();
@@ -161,7 +161,7 @@ namespace CsSandbox.Areas.HelpPage
             {
                 hashCode ^= ParameterType.GetHashCode();
             }
-            foreach (var parameterName in ParameterNames)
+            foreach (string parameterName in ParameterNames)
             {
                 hashCode ^= parameterName.ToUpperInvariant().GetHashCode();
             }

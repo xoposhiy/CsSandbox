@@ -24,37 +24,37 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
             { typeof(RequiredAttribute), a => "Required" },
             { typeof(RangeAttribute), a =>
                 {
-                    var range = (RangeAttribute)a;
+                    RangeAttribute range = (RangeAttribute)a;
                     return String.Format(CultureInfo.CurrentCulture, "Range: inclusive between {0} and {1}", range.Minimum, range.Maximum);
                 }
             },
             { typeof(MaxLengthAttribute), a =>
                 {
-                    var maxLength = (MaxLengthAttribute)a;
+                    MaxLengthAttribute maxLength = (MaxLengthAttribute)a;
                     return String.Format(CultureInfo.CurrentCulture, "Max length: {0}", maxLength.Length);
                 }
             },
             { typeof(MinLengthAttribute), a =>
                 {
-                    var minLength = (MinLengthAttribute)a;
+                    MinLengthAttribute minLength = (MinLengthAttribute)a;
                     return String.Format(CultureInfo.CurrentCulture, "Min length: {0}", minLength.Length);
                 }
             },
             { typeof(StringLengthAttribute), a =>
                 {
-                    var strLength = (StringLengthAttribute)a;
+                    StringLengthAttribute strLength = (StringLengthAttribute)a;
                     return String.Format(CultureInfo.CurrentCulture, "String length: inclusive between {0} and {1}", strLength.MinimumLength, strLength.MaximumLength);
                 }
             },
             { typeof(DataTypeAttribute), a =>
                 {
-                    var dataType = (DataTypeAttribute)a;
+                    DataTypeAttribute dataType = (DataTypeAttribute)a;
                     return String.Format(CultureInfo.CurrentCulture, "Data type: {0}", dataType.CustomDataType ?? dataType.DataType.ToString());
                 }
             },
             { typeof(RegularExpressionAttribute), a =>
                 {
-                    var regularExpression = (RegularExpressionAttribute)a;
+                    RegularExpressionAttribute regularExpression = (RegularExpressionAttribute)a;
                     return String.Format(CultureInfo.CurrentCulture, "Matching regular expression pattern: {0}", regularExpression.Pattern);
                 }
             },
@@ -114,14 +114,14 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
                 throw new ArgumentNullException("modelType");
             }
 
-            var underlyingType = Nullable.GetUnderlyingType(modelType);
+            Type underlyingType = Nullable.GetUnderlyingType(modelType);
             if (underlyingType != null)
             {
                 modelType = underlyingType;
             }
 
             ModelDescription modelDescription;
-            var modelName = ModelNameHelper.GetModelName(modelType);
+            string modelName = ModelNameHelper.GetModelName(modelType);
             if (GeneratedModels.TryGetValue(modelName, out modelDescription))
             {
                 if (modelType != modelDescription.ModelType)
@@ -151,11 +151,11 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
             if (modelType.IsGenericType)
             {
-                var genericArguments = modelType.GetGenericArguments();
+                Type[] genericArguments = modelType.GetGenericArguments();
 
                 if (genericArguments.Length == 1)
                 {
-                    var enumerableType = typeof(IEnumerable<>).MakeGenericType(genericArguments);
+                    Type enumerableType = typeof(IEnumerable<>).MakeGenericType(genericArguments);
                     if (enumerableType.IsAssignableFrom(modelType))
                     {
                         return GenerateCollectionModelDescription(modelType, genericArguments[0]);
@@ -163,13 +163,13 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
                 }
                 if (genericArguments.Length == 2)
                 {
-                    var dictionaryType = typeof(IDictionary<,>).MakeGenericType(genericArguments);
+                    Type dictionaryType = typeof(IDictionary<,>).MakeGenericType(genericArguments);
                     if (dictionaryType.IsAssignableFrom(modelType))
                     {
                         return GenerateDictionaryModelDescription(modelType, genericArguments[0], genericArguments[1]);
                     }
 
-                    var keyValuePairType = typeof(KeyValuePair<,>).MakeGenericType(genericArguments);
+                    Type keyValuePairType = typeof(KeyValuePair<,>).MakeGenericType(genericArguments);
                     if (keyValuePairType.IsAssignableFrom(modelType))
                     {
                         return GenerateKeyValuePairModelDescription(modelType, genericArguments[0], genericArguments[1]);
@@ -179,7 +179,7 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
             if (modelType.IsArray)
             {
-                var elementType = modelType.GetElementType();
+                Type elementType = modelType.GetElementType();
                 return GenerateCollectionModelDescription(modelType, elementType);
             }
 
@@ -204,7 +204,7 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
         // Change this to provide different name for the member.
         private static string GetMemberName(MemberInfo member, bool hasDataContractAttribute)
         {
-            var jsonProperty = member.GetCustomAttribute<JsonPropertyAttribute>();
+            JsonPropertyAttribute jsonProperty = member.GetCustomAttribute<JsonPropertyAttribute>();
             if (jsonProperty != null && !String.IsNullOrEmpty(jsonProperty.PropertyName))
             {
                 return jsonProperty.PropertyName;
@@ -212,7 +212,7 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
             if (hasDataContractAttribute)
             {
-                var dataMember = member.GetCustomAttribute<DataMemberAttribute>();
+                DataMemberAttribute dataMember = member.GetCustomAttribute<DataMemberAttribute>();
                 if (dataMember != null && !String.IsNullOrEmpty(dataMember.Name))
                 {
                     return dataMember.Name;
@@ -224,13 +224,13 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
         private static bool ShouldDisplayMember(MemberInfo member, bool hasDataContractAttribute)
         {
-            var jsonIgnore = member.GetCustomAttribute<JsonIgnoreAttribute>();
-            var xmlIgnore = member.GetCustomAttribute<XmlIgnoreAttribute>();
-            var ignoreDataMember = member.GetCustomAttribute<IgnoreDataMemberAttribute>();
-            var nonSerialized = member.GetCustomAttribute<NonSerializedAttribute>();
-            var apiExplorerSetting = member.GetCustomAttribute<ApiExplorerSettingsAttribute>();
+            JsonIgnoreAttribute jsonIgnore = member.GetCustomAttribute<JsonIgnoreAttribute>();
+            XmlIgnoreAttribute xmlIgnore = member.GetCustomAttribute<XmlIgnoreAttribute>();
+            IgnoreDataMemberAttribute ignoreDataMember = member.GetCustomAttribute<IgnoreDataMemberAttribute>();
+            NonSerializedAttribute nonSerialized = member.GetCustomAttribute<NonSerializedAttribute>();
+            ApiExplorerSettingsAttribute apiExplorerSetting = member.GetCustomAttribute<ApiExplorerSettingsAttribute>();
 
-            var hasMemberAttribute = member.DeclaringType.IsEnum ?
+            bool hasMemberAttribute = member.DeclaringType.IsEnum ?
                 member.GetCustomAttribute<EnumMemberAttribute>() != null :
                 member.GetCustomAttribute<DataMemberAttribute>() != null;
 
@@ -266,10 +266,10 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
         private void GenerateAnnotations(MemberInfo property, ParameterDescription propertyModel)
         {
-            var annotations = new List<ParameterAnnotation>();
+            List<ParameterAnnotation> annotations = new List<ParameterAnnotation>();
 
-            var attributes = property.GetCustomAttributes();
-            foreach (var attribute in attributes)
+            IEnumerable<Attribute> attributes = property.GetCustomAttributes();
+            foreach (Attribute attribute in attributes)
             {
                 Func<object, string> textGenerator;
                 if (AnnotationTextGenerator.TryGetValue(attribute.GetType(), out textGenerator))
@@ -300,7 +300,7 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
                 return String.Compare(x.Documentation, y.Documentation, StringComparison.OrdinalIgnoreCase);
             });
 
-            foreach (var annotation in annotations)
+            foreach (ParameterAnnotation annotation in annotations)
             {
                 propertyModel.Annotations.Add(annotation);
             }
@@ -308,7 +308,7 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
         private CollectionModelDescription GenerateCollectionModelDescription(Type modelType, Type elementType)
         {
-            var collectionModelDescription = GetOrCreateModelDescription(elementType);
+            ModelDescription collectionModelDescription = GetOrCreateModelDescription(elementType);
             if (collectionModelDescription != null)
             {
                 return new CollectionModelDescription
@@ -324,7 +324,7 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
         private ModelDescription GenerateComplexTypeModelDescription(Type modelType)
         {
-            var complexModelDescription = new ComplexTypeModelDescription
+            ComplexTypeModelDescription complexModelDescription = new ComplexTypeModelDescription
             {
                 Name = ModelNameHelper.GetModelName(modelType),
                 ModelType = modelType,
@@ -332,13 +332,13 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
             };
 
             GeneratedModels.Add(complexModelDescription.Name, complexModelDescription);
-            var hasDataContractAttribute = modelType.GetCustomAttribute<DataContractAttribute>() != null;
-            var properties = modelType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var property in properties)
+            bool hasDataContractAttribute = modelType.GetCustomAttribute<DataContractAttribute>() != null;
+            PropertyInfo[] properties = modelType.GetProperties(BindingFlags.Public | BindingFlags.Instance);
+            foreach (PropertyInfo property in properties)
             {
                 if (ShouldDisplayMember(property, hasDataContractAttribute))
                 {
-                    var propertyModel = new ParameterDescription
+                    ParameterDescription propertyModel = new ParameterDescription
                     {
                         Name = GetMemberName(property, hasDataContractAttribute)
                     };
@@ -354,12 +354,12 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
                 }
             }
 
-            var fields = modelType.GetFields(BindingFlags.Public | BindingFlags.Instance);
-            foreach (var field in fields)
+            FieldInfo[] fields = modelType.GetFields(BindingFlags.Public | BindingFlags.Instance);
+            foreach (FieldInfo field in fields)
             {
                 if (ShouldDisplayMember(field, hasDataContractAttribute))
                 {
-                    var propertyModel = new ParameterDescription
+                    ParameterDescription propertyModel = new ParameterDescription
                     {
                         Name = GetMemberName(field, hasDataContractAttribute)
                     };
@@ -379,8 +379,8 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
         private DictionaryModelDescription GenerateDictionaryModelDescription(Type modelType, Type keyType, Type valueType)
         {
-            var keyModelDescription = GetOrCreateModelDescription(keyType);
-            var valueModelDescription = GetOrCreateModelDescription(valueType);
+            ModelDescription keyModelDescription = GetOrCreateModelDescription(keyType);
+            ModelDescription valueModelDescription = GetOrCreateModelDescription(valueType);
 
             return new DictionaryModelDescription
             {
@@ -393,18 +393,18 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
         private EnumTypeModelDescription GenerateEnumTypeModelDescription(Type modelType)
         {
-            var enumDescription = new EnumTypeModelDescription
+            EnumTypeModelDescription enumDescription = new EnumTypeModelDescription
             {
                 Name = ModelNameHelper.GetModelName(modelType),
                 ModelType = modelType,
                 Documentation = CreateDefaultDocumentation(modelType)
             };
-            var hasDataContractAttribute = modelType.GetCustomAttribute<DataContractAttribute>() != null;
-            foreach (var field in modelType.GetFields(BindingFlags.Public | BindingFlags.Static))
+            bool hasDataContractAttribute = modelType.GetCustomAttribute<DataContractAttribute>() != null;
+            foreach (FieldInfo field in modelType.GetFields(BindingFlags.Public | BindingFlags.Static))
             {
                 if (ShouldDisplayMember(field, hasDataContractAttribute))
                 {
-                    var enumValue = new EnumValueDescription
+                    EnumValueDescription enumValue = new EnumValueDescription
                     {
                         Name = field.Name,
                         Value = field.GetRawConstantValue().ToString()
@@ -423,8 +423,8 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
         private KeyValuePairModelDescription GenerateKeyValuePairModelDescription(Type modelType, Type keyType, Type valueType)
         {
-            var keyModelDescription = GetOrCreateModelDescription(keyType);
-            var valueModelDescription = GetOrCreateModelDescription(valueType);
+            ModelDescription keyModelDescription = GetOrCreateModelDescription(keyType);
+            ModelDescription valueModelDescription = GetOrCreateModelDescription(valueType);
 
             return new KeyValuePairModelDescription
             {
@@ -437,7 +437,7 @@ namespace CsSandbox.Areas.HelpPage.ModelDescriptions
 
         private ModelDescription GenerateSimpleTypeModelDescription(Type modelType)
         {
-            var simpleModelDescription = new SimpleTypeModelDescription
+            SimpleTypeModelDescription simpleModelDescription = new SimpleTypeModelDescription
             {
                 Name = ModelNameHelper.GetModelName(modelType),
                 ModelType = modelType,

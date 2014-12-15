@@ -1,3 +1,7 @@
+@using System.Collections.Generic
+@using System.Collections.ObjectModel
+@using System.Web.Http.Description
+@using System.Threading
 @using CsSandbox.Areas.HelpPage.ModelDescriptions
 @model IList<ParameterDescription>
 
@@ -8,9 +12,9 @@
             <tr><th>Name</th><th>Description</th><th>Type</th><th>Additional information</th></tr>
         </thead>
         <tbody>
-            @foreach (var parameter in Model)
+            @foreach (ParameterDescription parameter in Model)
             {
-                var modelDescription = parameter.TypeDescription;
+                ModelDescription modelDescription = parameter.TypeDescription;
                 <tr>
                     <td class="parameter-name">@parameter.Name</td>
                     <td class="parameter-documentation">
