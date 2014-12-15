@@ -2,11 +2,11 @@
 {
 	public enum Verdict
 	{
-		NA,
-		ComplationError,
-		RuntimeError,
-		SecurityException,
-		SandboxError,
-		Ok,
+		NA = 0,
+		Ok = 1,
+		ComplationError = 2,
+		RuntimeError = 3,
+		SecurityException = 4,
+		SandboxError = 5,
 	}
 }

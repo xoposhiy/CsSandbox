@@ -2,10 +2,10 @@
 {
 	public enum SubmissionStatus
 	{
-		Waiting,
-		NotFound,
-		AccessDeny,
-		Error,
-		Done,
+		Waiting = 0,
+		Done = 1,
+		NotFound = 2,
+		AccessDeny = 3,
+		Error = 4,
 	}
 }
