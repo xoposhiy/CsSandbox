@@ -81,42 +81,49 @@ namespace CsSandbox.DataContext
 			db.SaveChanges();
 		}
 
-		private void SetSecurityException(string id)
+		private void SetExceptionResult(string id, SecurityException ex)
 		{
-			var submittion = db.Submission.Find(id);
-			submittion.Status = SubmissionStatus.Done;
-			submittion.Verdict = Verdict.SecurityException;
-			db.Submission.AddOrUpdate(submittion);
-			db.SaveChanges();
+			SetExceptionResult(id, Verdict.SecurityException, null);
 		}
 
-		private void SetRuntimeError(string id, string message)
+		private void SetExceptionResult(string id, Exception ex)
+		{
+			SetExceptionResult(id, Verdict.RuntimeError, ex.ToString());
+		}
+
+		private void SetExceptionResult(string id, Verdict verdict, string message)
 		{
 			var submittion = db.Submission.Find(id);
 			submittion.Status = SubmissionStatus.Done;
-			submittion.Verdict = Verdict.RuntimeError;
+			submittion.Verdict = verdict;
 			submittion.Error = message;
 			db.Submission.AddOrUpdate(submittion);
 			db.SaveChanges();
 		}
 
-		public void SetTargetInvocationException(string id, TargetInvocationException exception)
+		public void SetExceptionResult(string id, TargetInvocationException exception)
 		{
-			var innerException = exception.InnerException;
-			if (innerException is SecurityException)
-				SetSecurityException(id);
-			else
-				SetRuntimeError(id, innerException.ToString());
+			SetExceptionResult(id, (dynamic) exception.InnerException);
 		}
 
-		public void SetException(string id, string message)
+		public void SetSandboxException(string id, string message)
 		{
 			var submittion = db.Submission.Find(id);
 			submittion.Status = SubmissionStatus.Done;
 			submittion.Verdict = Verdict.SandboxError;
 			submittion.Error = message;
 			db.Submission.AddOrUpdate(submittion);
-			db.SaveChanges();			
+			db.SaveChanges();
+		}
+
+		public void SetOutputLimit(string id)
+		{
+			var submittion = db.Submission.Find(id);
+			submittion.Status = SubmissionStatus.Done;
+			submittion.Verdict = Verdict.OutputLimit;
+			submittion.Error = "Слишком большой вывод";
+			db.Submission.AddOrUpdate(submittion);
+			db.SaveChanges();
 		}
 	}
 }

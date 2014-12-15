@@ -8,7 +8,6 @@ using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
 using System.Text;
-using System.Threading.Tasks;
 using CsSandbox.DataContext;
 using CsSandboxApi;
 using Microsoft.CSharp;
@@ -62,22 +61,29 @@ namespace CsSandbox.Sandbox
 				);
 			var sandboxer = (Sandboxer)handle.Unwrap();
 			var stdin = new StringReader(submission.Input ?? "");
-			var stdout = new StringWriter();
-			var stderr = new StringWriter();
+			var stdout = new LimitedStringWriter();
+			var stderr = new LimitedStringWriter();
 			try
 			{
 				sandboxer.ExecuteUntrustedCode(assembly.CompiledAssembly.EntryPoint, stdin, stdout, stderr);
 			}
 			catch (TargetInvocationException ex)
 			{
-				submissions.SetTargetInvocationException(id, ex);
+				submissions.SetExceptionResult(id, ex);
 				return;
 			}
 			catch (Exception ex)
 			{
-				submissions.SetException(id, ex.ToString());
+				submissions.SetSandboxException(id, ex.ToString());
 				return;
 			}
+
+			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
+			{
+				submissions.SetOutputLimit(id);
+				return;
+			}
+
 			submissions.SetRunInfo(id, stdout.ToString(), stderr.ToString());
 		}
 
