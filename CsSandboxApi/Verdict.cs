@@ -10,5 +10,6 @@
 		SandboxError = 5,
 		OutputLimit = 6,
 		TimeLimit = 7,
+		MemoryLimit = 8,
 	}
 }

@@ -28,4 +28,12 @@ namespace CsSandbox.Sandbox
 		}
 	}
 
+	public class MemoryLimitException : SolutionException
+	{
+		public MemoryLimitException()
+			: base("Программа привысила максимальный размер используемой памяти", Verdict.MemoryLimit)
+		{
+		}
+	}
+
 }

@@ -3,12 +3,12 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
 using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 using CsSandbox.DataContext;
 using CsSandboxApi;
 using Microsoft.CSharp;
@@ -20,9 +20,15 @@ namespace CsSandbox.Sandbox
 		private readonly string _id;
 		private readonly SubmissionModel _submission;
 		private readonly SubmissionRepo _submissionsRepo = new SubmissionRepo();
+
 		private const int TimeLimitInSeconds = 1;
 		private static readonly TimeSpan TimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
 		private static readonly TimeSpan IdleTimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
+
+		private const int MemoryLimit = 64*1024*1024;
+
+		private bool _hasTimeLimit;
+		private bool _hasMemoryLimit;
 
 		public Worker(string id, SubmissionModel submission)
 		{
@@ -47,13 +53,13 @@ namespace CsSandbox.Sandbox
 			{
 				RunSandboxer(domain, sandboxer, assembly);
 			}
-			catch (AggregateException ex)
+			catch (TargetInvocationException ex)
 			{
 				_submissionsRepo.SetExceptionResult(_id, ex);
 			}
 			catch (SolutionException ex)
 			{
-				_submissionsRepo.SetExceptionResult(_id, (dynamic)ex);
+				_submissionsRepo.SetExceptionResult(_id, ex);
 			}
 			catch (Exception ex)
 			{
@@ -106,30 +112,55 @@ namespace CsSandbox.Sandbox
 		private void RunSandboxer(AppDomain domain, Sandboxer sandboxer, CompilerResults assembly)
 		{
 			var stdin = new StringReader(_submission.Input ?? "");
-			var task =
-				new Task<Tuple<LimitedStringWriter, LimitedStringWriter>>(
-					() => sandboxer.ExecuteUntrustedCode(assembly.CompiledAssembly.EntryPoint, stdin));
+			Tuple<Exception, LimitedStringWriter, LimitedStringWriter> res = null;
+			var task = new Thread(() => { res = sandboxer.ExecuteUntrustedCode(assembly.CompiledAssembly.EntryPoint, stdin); }, MemoryLimit);
+
+			var maxMemory = domain.MonitoringSurvivedMemorySize + MemoryLimit;
+			var finishTime = DateTime.Now.Add(IdleTimeLimit);
+
 			task.Start();
 
-			var finishTime = DateTime.Now.Add(IdleTimeLimit);
-			while (!task.IsCompleted 
-				&& TimeLimit.CompareTo(domain.MonitoringTotalProcessorTime) >= 0 
-				&& finishTime.CompareTo(DateTime.Now) >= 0)
+			while (task.IsAlive
+				&& !IsTimeLimitExpected(domain, finishTime)
+				&& !IsMemoryLimitExpected(domain, maxMemory))
 			{
-				if (task.IsFaulted)
-					throw task.Exception;
 				Thread.Sleep(100);
 			}
 
-			if (!task.IsCompleted)
-				throw new TimeLimitException();
+			task.Abort();
 
-			var stdout = task.Result.Item1;
-			var stderr = task.Result.Item2;
+			if (_hasTimeLimit)
+			{
+				throw new TimeLimitException();
+			}
+
+			if (_hasMemoryLimit)
+			{
+				throw new MemoryLimitException();
+			}
+
+			if (res.Item1 != null)
+				throw res.Item1;
+
+			var stdout = res.Item2;
+			var stderr = res.Item3;
 			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
 				throw new OutputLimitException();
 
 			_submissionsRepo.SetRunInfo(_id, stdout.ToString(), stderr.ToString());
+		}
+
+		private bool IsMemoryLimitExpected(AppDomain domain, long maxMemory)
+		{
+			return _hasMemoryLimit = _hasMemoryLimit
+			                         || maxMemory < domain.MonitoringSurvivedMemorySize;
+		}
+
+		private bool IsTimeLimitExpected(AppDomain domain, DateTime finishTime)
+		{
+			return _hasTimeLimit = _hasTimeLimit
+			                       || TimeLimit.CompareTo(domain.MonitoringTotalProcessorTime) < 0
+			                       || finishTime.CompareTo(DateTime.Now) < 0;
 		}
 
 		private bool WasError(CompilerResults results)

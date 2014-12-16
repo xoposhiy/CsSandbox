@@ -26,7 +26,7 @@ namespace CsSandbox.Controllers
 			try
 			{
 				var submission = _submissions.AddSubmission(userId, model);
-				Task.Run((Action)new Worker(submission.Id, model).Run);
+				Task.Run(() => new Worker(submission.Id, model).Run());
 				return submission.Id;
 			}
 			catch (Exception e)

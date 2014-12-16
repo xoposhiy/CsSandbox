@@ -87,12 +87,17 @@ namespace CsSandbox.DataContext
 			SetExceptionResult(id, ex.Verdict, ex.Message);
 		}
 
-		public void SetExceptionResult(string id, SecurityException ex)
+		private void SetExceptionResult(string id, OutOfMemoryException ex)
+		{
+			SetExceptionResult(id, (Exception)ex);
+		}
+
+		private void SetExceptionResult(string id, SecurityException ex)
 		{
 			SetExceptionResult(id, Verdict.SecurityException, null);
 		}
 
-		public void SetExceptionResult(string id, Exception ex)
+		private void SetExceptionResult(string id, Exception ex)
 		{
 			SetExceptionResult(id, Verdict.RuntimeError, ex.ToString());
 		}
@@ -105,11 +110,6 @@ namespace CsSandbox.DataContext
 			submittion.Error = message;
 			db.Submission.AddOrUpdate(submittion);
 			db.SaveChanges();
-		}
-
-		public void SetExceptionResult(string id, AggregateException exception)
-		{
-			SetExceptionResult(id, (dynamic) exception.InnerException);
 		}
 
 		public void SetExceptionResult(string id, TargetInvocationException exception)

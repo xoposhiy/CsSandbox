@@ -70,7 +70,7 @@ namespace CsSandboxTests
 
 		[TestCase(@"using System; class Program { static void Main() { int a = 0; while(true) { ++a; } }}")]
 		[TestCase(@"using System.Threading; class Program{ private static void Main() { Thread.Sleep(3000); }}")]
-		public static async void TestTimeLimit(string code)
+		public static async void TestTimeLimitError(string code)
 		{
 			var details = await GetDetails(code, "");
 
@@ -78,6 +78,29 @@ namespace CsSandboxTests
 			Assert.IsNotNullOrEmpty(details.Error);
 		}
 
+		[TestCase(@"using System; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; Console.WriteLine(a); }}")]
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(65 * 1024 * 1024); static void Main() { Console.WriteLine(mem); }}")] // throw TypeInitializationException
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(65 * 1024 * 1024); Console.WriteLine(mem); }}")]
+		public static async void TestMemoryLimitError(string code)
+		{
+			var details = await GetDetails(code, "");
+
+			Assert.AreEqual(Verdict.MemoryLimit, details.Verdict);
+			Assert.IsNotNullOrEmpty(details.Error);
+		}
+
+		[TestCase(@"using System; class Program { static void Main() { var a = new byte[63 * 1024 * 1024]; Console.WriteLine(a); }}")]
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(63 * 1024 * 1024); static void Main() { Console.WriteLine(mem); }}")]
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(63 * 1024 * 1024); Console.WriteLine(mem); }}")]
+		public static async void TestMemoryLimit(string code)
+		{
+			var details = await GetDetails(code, "");
+
+			Assert.AreEqual(Verdict.Ok, details.Verdict);
+			Assert.IsNullOrEmpty(details.Error);
+			Assert.IsNotNullOrEmpty(details.Output);
+		}
+		
 		private static async Task<PublicSubmissionDetails> GetDetails(string code, string input)
 		{
 			var client = new CsSandboxClient("tester");
