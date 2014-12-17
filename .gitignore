@@ -175,3 +175,4 @@ FakesAssemblies/
 *.Settings.cs
 
 *.pfx
+*.snk
