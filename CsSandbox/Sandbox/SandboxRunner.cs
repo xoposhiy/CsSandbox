@@ -2,24 +2,19 @@
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
-using System.Text;
 using System.Threading;
-using CsSandbox.DataContext;
 using CsSandboxApi;
 using Microsoft.CSharp;
 
 namespace CsSandbox.Sandbox
 {
-	public class Worker 
+	public class SandboxRunner 
 	{
 		private readonly string _id;
 		private readonly SubmissionModel _submission;
-		private readonly SubmissionRepo _submissionsRepo = new SubmissionRepo();
 
 		private const int TimeLimitInSeconds = 1;
 		private static readonly TimeSpan TimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
@@ -30,41 +25,29 @@ namespace CsSandbox.Sandbox
 		private bool _hasTimeLimit;
 		private bool _hasMemoryLimit;
 
-		public Worker(string id, SubmissionModel submission)
+		public SandboxRunner(string id, SubmissionModel submission)
 		{
 			_id = id;
 			_submission = submission;
 		}
 
-		public void Run()
+		public IRunningResult Run()
 		{
 			var assembly = CreateAssemby();
 
-			if (assembly == null)
-				return;
+			var compilationInfo = CompilationOnly.Create(assembly);
+
+			if (compilationInfo.IsCompilationError)
+				return compilationInfo;
 
 			if (!_submission.NeedRun)
-				return;
+				return compilationInfo;
 
 			var domain = CreateDomain(assembly);
 			var sandboxer = CreateSandboxer(domain);
 
-			try
-			{
-				RunSandboxer(domain, sandboxer, assembly);
-			}
-			catch (TargetInvocationException ex)
-			{
-				_submissionsRepo.SetExceptionResult(_id, ex);
-			}
-			catch (SolutionException ex)
-			{
-				_submissionsRepo.SetExceptionResult(_id, ex);
-			}
-			catch (Exception ex)
-			{
-				_submissionsRepo.SetSandboxException(_id, ex.ToString());
-			}
+			var result = RunSandboxer(domain, sandboxer, assembly);
+			return result.AddCompilationInfo(compilationInfo);
 		}
 
 		private static Sandboxer CreateSandboxer(AppDomain domain)
@@ -106,10 +89,10 @@ namespace CsSandbox.Sandbox
 
 			var assembly = provider.CompileAssemblyFromSource(compilerParameters, _submission.Code);
 
-			return WasError(assembly) ? null : assembly;
+			return assembly;
 		}
 
-		private void RunSandboxer(AppDomain domain, Sandboxer sandboxer, CompilerResults assembly)
+		private IRunningResult RunSandboxer(AppDomain domain, Sandboxer sandboxer, CompilerResults assembly)
 		{
 			var stdin = new StringReader(_submission.Input ?? "");
 			Tuple<Exception, LimitedStringWriter, LimitedStringWriter> res = null;
@@ -130,24 +113,20 @@ namespace CsSandbox.Sandbox
 			task.Abort();
 
 			if (_hasTimeLimit)
-			{
-				throw new TimeLimitException();
-			}
+				return new HasException(new TimeLimitException());
 
 			if (_hasMemoryLimit)
-			{
-				throw new MemoryLimitException();
-			}
+				return new HasException(new MemoryLimitException());
 
 			if (res.Item1 != null)
-				throw res.Item1;
+				return new HasException(res.Item1);
 
 			var stdout = res.Item2;
 			var stderr = res.Item3;
 			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
-				throw new OutputLimitException();
+				return new HasException( new OutputLimitException());
 
-			_submissionsRepo.SetRunInfo(_id, stdout.ToString(), stderr.ToString());
+			return new NormalRun(stdout.ToString(), stderr.ToString());
 		}
 
 		private bool IsMemoryLimitExpected(AppDomain domain, long maxMemory)
@@ -161,23 +140,6 @@ namespace CsSandbox.Sandbox
 			return _hasTimeLimit = _hasTimeLimit
 			                       || TimeLimit.CompareTo(domain.MonitoringTotalProcessorTime) < 0
 			                       || finishTime.CompareTo(DateTime.Now) < 0;
-		}
-
-		private bool WasError(CompilerResults results)
-		{
-			if (results.Errors.Count == 0) return false;
-			var sb = new StringBuilder();
-			var errors = results.Errors
-				.Cast<CompilerError>()
-				.ToList();
-			foreach (var error in errors)
-			{
-				sb.Append(String.Format("{0} ({1}): {2}", error.IsWarning ? "Warning" : "Error", error.ErrorNumber, error.ErrorText));
-			}
-
-			_submissionsRepo.SetCompilationInfo(_id, results.Errors.HasErrors, sb.ToString());
-
-			return results.Errors.HasErrors;
 		}
 	}
 }
