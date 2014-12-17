@@ -52,11 +52,9 @@ namespace CsSandbox.DataContext
 			return submission.Status;
 		}
 
-		public SubmissionDetails GetDetails(string userId, string id)
+		public SubmissionDetails FindDetails(string id)
 		{
 			var submission = db.Submission.Find(id);
-			if (submission == null || submission.UserId != userId)
-				return null;
 			return submission;
 		}
 

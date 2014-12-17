@@ -16,9 +16,10 @@ namespace CsSandbox.DataContext
 			this.db = db;
 		}
 
-		public string GetUser(string token)
+		public string FindUser(string token)
 		{
-			return db.Users.FirstOrDefaultAsync(user => user.Token == token).Result.Id;
+			var userInfo = db.Users.FirstOrDefaultAsync(user => user.Token == token).Result;
+			return userInfo == null ? null : userInfo.Id;
 		}
 	}
 }

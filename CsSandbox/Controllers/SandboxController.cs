@@ -1,4 +1,5 @@
-﻿using System;
+﻿using System.Net;
+using System.Net.Http;
 using System.Threading.Tasks;
 using System.Web.Http;
 using CsSandbox.DataContext;
@@ -18,43 +19,58 @@ namespace CsSandbox.Controllers
 		public string CreateSubmission(SubmissionModel model)
 		{
 			if (!ModelState.IsValid)
-				return null;
+				throw new HttpResponseException(HttpStatusCode.BadRequest);
 
-			var userId = _users.GetUser(model.Token);
-			if (userId == null)
-				return null;
-			try
-			{
-				var submission = _submissions.AddSubmission(userId, model);
-				Task.Run(() => new Worker(submission.Id, model).Run());
-				return submission.Id;
-			}
-			catch (Exception e)
-			{
-				return e.ToString();
-			}
+			var userId = GetUserId(model.Token);
+
+			var submission = _submissions.AddSubmission(userId, model);
+			Task.Run(() => new Worker(submission.Id, model).Run());
+			return submission.Id;
 		}
 
-		[HttpGet]
+	    [HttpGet]
 		[Route("GetSubmissionStatus")]
 		public SubmissionStatus GetSubmissionStatus(string id, string token)
 		{
-			if (!ModelState.IsValid)
-				return SubmissionStatus.Error;
+			var status = _submissions.GetStatus(GetUserId(token), id);
 
-			return _submissions.GetStatus(_users.GetUser(token), id);
+		    if (status == SubmissionStatus.NotFound)
+			    throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound)
+			    {
+				    ReasonPhrase = "Посылка с указанным ID не найдена."
+			    });
+
+			if (status == SubmissionStatus.AccessDeny)
+				throw new HttpResponseException(HttpStatusCode.Forbidden);
+
+		    return status;
 		}
 
-		[HttpGet]
+	    [HttpGet]
 		[Route("GetSubmissionDetails")]
 		public PublicSubmissionDetails GetSubmissionDetails(string id, string token)
 		{
-			if (!ModelState.IsValid)
-				return null;
+			var userId = GetUserId(token);
+			var details = _submissions.FindDetails(id);
 
-			var userId = _users.GetUser(token);
-			var details = _submissions.GetDetails(userId, id);
+			if (details == null)
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound)
+				{
+					ReasonPhrase = "Посылка с указанным ID не найдена."
+				});
+
+		    if (details.UserId != userId)
+				throw new HttpResponseException(HttpStatusCode.Forbidden);
+
 			return details.ToPublic();
 		}
+
+	    private string GetUserId(string token)
+	    {
+		    var userId = _users.FindUser(token);
+		    if (userId == null)
+			    throw new HttpResponseException(HttpStatusCode.Unauthorized);
+		    return userId;
+	    }
     }
 }
