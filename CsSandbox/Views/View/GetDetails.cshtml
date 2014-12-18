@@ -1,0 +1,43 @@
+﻿@using CsSandboxApi
+@{
+	Layout = null;
+	var model = (PublicSubmissionDetails)Model;
+	var texts = new[]
+	{
+		new {text = model.Code, type = "code", name = "Код"},
+		new {text = model.CompilationInfo, type = "compilationInfo", name = "Сообщения компилятора"},
+		new {text = model.Input, type = "input", name = "Ввод"},
+		new {text = model.Output, type = "output", name = "Вывод"},
+		new {text = model.Error, type = "error", name = "Поток ошибок"}
+	}
+	.Where(arg => !String.IsNullOrEmpty(arg.text));
+}
+
+<h4> 
+	ID: @Html.Encode(model.Id)
+</h4>
+<h4>
+	Время отправки: @Html.Encode(model.Timestamp.ToString("dd-MM-yy hh:mm:ss"))
+</h4>
+<h4>
+	Статус: @Html.Encode(model.Status.ToString())
+</h4>
+<h4>
+	Вердикт: @Html.Encode(model.Verdict.ToString())
+</h4>
+
+@foreach (var text in texts)
+{
+	<div class="panel panel-default">
+		<div class="panel-heading" role="tab">
+			<h4 class="panel-title" data-toggle="collapse" data-target="#@text.type">
+				@text.name
+			</h4>
+		</div>
+		<div id="@text.type" class="panel-collapse collapse" role="tabpanel">
+			<div class="panel-body">
+				@text.text
+			</div>
+		</div>
+	</div>
+}

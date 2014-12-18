@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Security;
 using CsSandbox.Models;
@@ -102,6 +103,8 @@ namespace CsSandbox.DataContext
 			submission.Error = message;
 			Save(submission);
 		}
+
+		public abstract IEnumerable<SubmissionDetails> GetAllSubmissions(string userId, int max, int skip);
 
 		private void SetExceptionResult(string id, Verdict verdict, string message)
 		{

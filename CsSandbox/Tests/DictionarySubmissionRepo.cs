@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using CsSandbox.DataContext;
 using CsSandbox.Models;
 
@@ -18,6 +19,15 @@ namespace CsSandbox.Tests
 		protected override void Save(SubmissionDetails submission)
 		{
 			db[submission.Id] = submission;
+		}
+
+		public override IEnumerable<SubmissionDetails> GetAllSubmissions(string userId, int max, int skip)
+		{
+			return db.Select(pair => pair.Value)
+				.Where(details => details.UserId == userId)
+				.OrderByDescending(details => details.Timestamp)
+				.Skip(skip)
+				.Take(max);
 		}
 	}
 }

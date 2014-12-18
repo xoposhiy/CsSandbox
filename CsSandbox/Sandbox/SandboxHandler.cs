@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using CsSandbox.DataContext;
 using CsSandbox.Models;
@@ -65,5 +66,9 @@ namespace CsSandbox.Sandbox
 			return _submissions.FindDetails(id);
 		}
 
+		public IEnumerable<SubmissionDetails> GetAllSubmissions(string userId, int max, int skip)
+		{
+			return _submissions.GetAllSubmissions(userId, max, skip);
+		}
 	}
 }

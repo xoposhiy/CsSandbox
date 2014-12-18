@@ -1,0 +1,64 @@
+﻿@using CsSandbox.Models
+@using CsSandboxApi
+
+@{
+	var model = Model as SubmissionsListModel;
+	var token = model.Token;
+	var ind = 0;
+}
+
+<table class="table table-hover table-striped">
+	<thead>
+		<tr>
+			<th></th>
+			<th>Time</th>
+			<th>ID</th>
+			<th>State</th>
+		</tr>
+	</thead>
+	@foreach (var detail in  model.Submissions)
+	{
+		ind++;
+		var st = "";
+		if (detail.Status != SubmissionStatus.Waiting)
+		{
+			st = detail.Status == SubmissionStatus.Done ? "success" : "danger";
+		}
+		<tr class="@st" onclick="openDetails('@detail.Id')">
+			<td>@ind</td>
+			<td>@detail.Timestamp.ToString("dd.MM.yy hh:mm:ss")</td>
+			<td>@detail.Id</td>
+			<td>@detail.Status.ToString()</td>
+		</tr>
+	}
+</table>
+
+<script>
+	function openDetails(id) {
+		$.ajax({
+			type: 'GET',
+			url: '/View/GetDetails',
+			data:
+			{
+				token: "@token",
+				id: id
+			}
+		}).always(function(ans) {
+			$('#details-field').html(ans);
+			$('#details-window').modal('show');
+		});
+	}
+</script>
+
+<div class="modal fade" id="details-window">
+	<div class="modal-dialog">
+		<div class="modal-content">
+			<div class="modal-header">
+				<button type="button" class="close" data-dismiss="modal"><span aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+				<h4 class="modal-title">Информация по посылке</h4>
+			</div>
+			<div class="modal-body" id="details-field">
+			</div>
+		</div><!-- /.modal-content -->
+	</div><!-- /.modal-dialog -->
+</div><!-- /.modal -->

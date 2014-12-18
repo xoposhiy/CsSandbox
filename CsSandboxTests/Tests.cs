@@ -26,7 +26,7 @@ namespace CsSandboxTests
 			var details = await GetDetails(code, "");
 
 			Assert.AreEqual(Verdict.ComplationError, details.Verdict);
-			Assert.IsNotNullOrEmpty(details.CompilationError);
+			Assert.IsNotNullOrEmpty(details.CompilationInfo);
 		}
 
 		[TestCase("using System; using System.IO; namespace UntrustedCode { public class UntrustedClass { public static void Main() { Directory.GetFiles(@\"c:\\\"); }}}")]
@@ -65,7 +65,7 @@ namespace CsSandboxTests
 			Assert.AreEqual(Verdict.Ok, details.Verdict);
 			Assert.AreEqual(new string('*', 4000), details.Output);
 			Assert.IsNullOrEmpty(details.Error);
-			Assert.IsNullOrEmpty(details.CompilationError);
+			Assert.IsNullOrEmpty(details.CompilationInfo);
 		}
 
 		[TestCase(@"using System; class Program { static void Main() { int a = 0; while(true) { ++a; } }}")]

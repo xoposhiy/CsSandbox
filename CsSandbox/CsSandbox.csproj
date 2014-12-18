@@ -187,8 +187,10 @@
     <Compile Include="Areas\HelpPage\SampleGeneration\SampleDirection.cs" />
     <Compile Include="Areas\HelpPage\SampleGeneration\TextSample.cs" />
     <Compile Include="Areas\HelpPage\XmlDocumentationProvider.cs" />
+    <Compile Include="Controllers\DataManager.cs" />
     <Compile Include="Controllers\HomeController.cs" />
     <Compile Include="Controllers\SandboxController.cs" />
+    <Compile Include="Controllers\ViewController.cs" />
     <Compile Include="DataContext\AbstractSubmissionRepo.cs" />
     <Compile Include="DataContext\CsSandboxDB.cs" />
     <Compile Include="DataContext\ISubmissionRepo.cs" />
@@ -207,6 +209,7 @@
     <Compile Include="Models\AccountBindingModels.cs" />
     <Compile Include="Models\AccountViewModels.cs" />
     <Compile Include="Models\SubmissionDetailsExtentions.cs" />
+    <Compile Include="Models\SubmissionsListModel.cs" />
     <Compile Include="Models\User.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ApplicationOAuthProvider.cs" />
@@ -290,6 +293,9 @@
     <Content Include="Views\Home\Index.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\View\All.cshtml" />
+    <Content Include="Views\View\SubmissionsList.cshtml" />
+    <Content Include="Views\View\GetDetails.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />

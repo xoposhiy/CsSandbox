@@ -1,5 +1,9 @@
-﻿using System.Data.Entity.Migrations;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
+using System.Data.Entity.Migrations;
+using System.Linq;
 using CsSandbox.Models;
+using CsSandboxApi;
 
 namespace CsSandbox.DataContext
 {
@@ -28,5 +32,12 @@ namespace CsSandbox.DataContext
 			db.SaveChanges();
 		}
 
+		public override IEnumerable<SubmissionDetails> GetAllSubmissions(string userId, int max, int skip)
+		{
+			return db.Submission.Where(details => details.UserId == userId)
+				.OrderByDescending(details => details.Timestamp)
+				.Skip(skip)
+				.Take(max);
+		}
 	}
 }

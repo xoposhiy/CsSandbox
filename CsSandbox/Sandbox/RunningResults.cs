@@ -36,7 +36,7 @@ namespace CsSandbox.Sandbox
 				.ToList();
 			foreach (var error in errors)
 			{
-				sb.Append(String.Format("{0} ({1}): {2}", error.IsWarning ? "Warning" : "Error", error.ErrorNumber, error.ErrorText));
+				sb.Append(String.Format("{0} ({1}): {2}\n", error.IsWarning ? "Warning" : "Error", error.ErrorNumber, error.ErrorText));
 			}
 
 			return new CompilationOnly(assembly.Errors.HasErrors, sb.ToString());

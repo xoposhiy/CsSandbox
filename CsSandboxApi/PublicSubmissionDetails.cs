@@ -14,12 +14,12 @@ namespace CsSandboxApi
 
 		public readonly Verdict Verdict;
 
-		public readonly string CompilationError;
+		public readonly string CompilationInfo;
 
 		public readonly string Output;
 		public readonly string Error;
 
-		public PublicSubmissionDetails(string id, SubmissionStatus status, string code, string input, DateTime timestamp, bool needRun, Verdict verdict, string compilationError, string output, string error)
+		public PublicSubmissionDetails(string id, SubmissionStatus status, string code, string input, DateTime timestamp, bool needRun, Verdict verdict, string compilationInfo, string output, string error)
 		{
 			Id = id;
 			Status = status;
@@ -28,7 +28,7 @@ namespace CsSandboxApi
 			Timestamp = timestamp;
 			NeedRun = needRun;
 			Verdict = verdict;
-			CompilationError = compilationError;
+			CompilationInfo = compilationInfo;
 			Output = output;
 			Error = error;
 		}

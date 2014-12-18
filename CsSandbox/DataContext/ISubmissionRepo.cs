@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Reflection;
 using System.Security;
 using CsSandbox.Models;
@@ -10,7 +11,6 @@ namespace CsSandbox.DataContext
 	public interface ISubmissionRepo
 	{
 		SubmissionDetails AddSubmission(string userId, SubmissionModel submission);
-		SubmissionStatus GetStatus(string userId, string id);
 		SubmissionDetails FindDetails(string id);
 		void SetCompilationInfo(string id, bool isCompilationError, string compilationOutput);
 		void SetRunInfo(string id, string stdout, string stderr);
@@ -21,5 +21,6 @@ namespace CsSandbox.DataContext
 		void SetExceptionResult(string id, TargetInvocationException exception);
 		void SetDone(string id);
 		void SetSandboxException(string id, string message);
+		IEnumerable<SubmissionDetails> GetAllSubmissions(string userId, int max, int skip);
 	}
 }
