@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
+using CsSandbox.Models;
 using CsSandboxApi;
 using NUnit.Framework;
 
@@ -116,15 +117,15 @@ namespace CsSandbox.Tests
 			Assert.NotNull(id);
 
 			var count = 50;
-			var lastStatus = client.GetStatus(userId, id);
+			var lastStatus = client.FindDetails(id).Status;
 			while (lastStatus != SubmissionStatus.Done && count >= 0)
 			{
 				await Task.Delay(100);
 				--count;
-				lastStatus = client.GetStatus(userId, id);
+				lastStatus = client.FindDetails(id).Status;
 			}
 			Assert.GreaterOrEqual(count, 0, "too slow...");
-			var details = client.FindDetails(userId, id);
+			var details = client.FindDetails(id).ToPublic();
 
 			Assert.NotNull(details);
 			Assert.AreEqual(SubmissionStatus.Done, details.Status);

@@ -1,6 +1,8 @@
 ﻿using System.Net;
+using System.Net.Http;
 using System.Web.Http;
 using CsSandbox.DataContext;
+using CsSandbox.Models;
 using CsSandbox.Sandbox;
 using CsSandboxApi;
 
@@ -26,17 +28,18 @@ namespace CsSandbox.Controllers
 		[Route("GetSubmissionStatus")]
 		public SubmissionStatus GetSubmissionStatus(string id, string token)
 	    {
-		    var userId = GetUserId(token);
-			return _sandbox.GetStatus(userId, id);
+			var details = GetDetails(id, token);
+			return details.Status;
 		}
 
 	    [HttpGet]
 		[Route("GetSubmissionDetails")]
 		public PublicSubmissionDetails GetSubmissionDetails(string id, string token)
 		{
-			var userId = GetUserId(token);
-			return _sandbox.FindDetails(userId, id);
+			var details = GetDetails(id, token);
+			return details.ToPublic();
 		}
+
 	    private string GetUserId(string token)
 	    {
 		    var userId = _users.FindUser(token);
@@ -44,5 +47,23 @@ namespace CsSandbox.Controllers
 			    throw new HttpResponseException(HttpStatusCode.Unauthorized);
 		    return userId;
 	    }
+
+		private SubmissionDetails GetDetails(string id, string token)
+		{
+			var userId = GetUserId(token);
+			var details = _sandbox.FindDetails(id);
+
+			if (details == null)
+				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound)
+				{
+					ReasonPhrase = "Посылка с указанным ID не найдена."
+				});
+
+			if (details.UserId != userId)
+				throw new HttpResponseException(HttpStatusCode.Forbidden);
+
+			return details;
+		}
+
     }
 }

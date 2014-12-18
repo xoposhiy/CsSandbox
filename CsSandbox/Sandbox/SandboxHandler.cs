@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Net;
-using System.Net.Http;
 using System.Threading.Tasks;
-using System.Web.Http;
 using CsSandbox.DataContext;
 using CsSandbox.Models;
 using CsSandboxApi;
@@ -63,36 +60,10 @@ namespace CsSandbox.Sandbox
 			_submissions.SetRunInfo(id, result.Stdout, result.Stderr);
 		}
 
-		public SubmissionStatus GetStatus(string userId, string id)
+		public SubmissionDetails FindDetails(string id)
 		{
-			var status = _submissions.GetStatus(userId, id);
-
-			if (status == SubmissionStatus.NotFound)
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound)
-				{
-					ReasonPhrase = "Посылка с указанным ID не найдена."
-				});
-
-			if (status == SubmissionStatus.AccessDeny)
-				throw new HttpResponseException(HttpStatusCode.Forbidden);
-
-			return status;
+			return _submissions.FindDetails(id);
 		}
 
-		public PublicSubmissionDetails FindDetails(string userId, string id)
-		{
-			var details = _submissions.FindDetails(id);
-
-			if (details == null)
-				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound)
-				{
-					ReasonPhrase = "Посылка с указанным ID не найдена."
-				});
-
-			if (details.UserId != userId)
-				throw new HttpResponseException(HttpStatusCode.Forbidden);
-
-			return details.ToPublic();
-		}
 	}
 }
