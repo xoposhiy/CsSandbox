@@ -33,7 +33,7 @@ namespace CsSandboxApi
 
 			if (!response.IsSuccessStatusCode)
 			{
-				throw new Exception(response.ToString());
+				throw new Exception(response.Content.ReadAsHttpResponseMessageAsync().Result.ToString());
 			}
 
 			var submissionId = await response.Content.ReadAsStringAsync();
@@ -46,7 +46,7 @@ namespace CsSandboxApi
 			var response = await _httpClient.GetAsync(uri);
 			if (!response.IsSuccessStatusCode)
 			{
-				throw new Exception(response.ToString());
+				throw new Exception(response.Content.ReadAsHttpResponseMessageAsync().Result.ToString());
 			}
 
 			return await response.Content.ReadAsAsync<SubmissionStatus>();
@@ -58,7 +58,7 @@ namespace CsSandboxApi
 			var response = await _httpClient.GetAsync(uri);
 			if (!response.IsSuccessStatusCode)
 			{
-				throw new Exception(response.ToString());
+				throw new Exception(response.Content.ReadAsHttpResponseMessageAsync().Result.ToString());
 			}
 
 			return await response.Content.ReadAsAsync<PublicSubmissionDetails>();
