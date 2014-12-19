@@ -11,7 +11,7 @@ namespace CsSandboxApi
 		private readonly string _token;
 		private readonly HttpClient _httpClient;
 
-		public CsSandboxClient(string token, string baseAddress = "http://localhost:62992/")
+		public CsSandboxClient(string token, string baseAddress)
 		{
 			_token = token;
 			_httpClient = new HttpClient {BaseAddress = new Uri(baseAddress)};
@@ -33,7 +33,7 @@ namespace CsSandboxApi
 
 			if (!response.IsSuccessStatusCode)
 			{
-				throw new Exception(response.Content.ReadAsHttpResponseMessageAsync().Result.ToString());
+				throw CsSandboxClientException.Create(response);
 			}
 
 			var submissionId = await response.Content.ReadAsStringAsync();
@@ -46,7 +46,7 @@ namespace CsSandboxApi
 			var response = await _httpClient.GetAsync(uri);
 			if (!response.IsSuccessStatusCode)
 			{
-				throw new Exception(response.Content.ReadAsHttpResponseMessageAsync().Result.ToString());
+				throw CsSandboxClientException.Create(response);
 			}
 
 			return await response.Content.ReadAsAsync<SubmissionStatus>();
@@ -58,7 +58,7 @@ namespace CsSandboxApi
 			var response = await _httpClient.GetAsync(uri);
 			if (!response.IsSuccessStatusCode)
 			{
-				throw new Exception(response.Content.ReadAsHttpResponseMessageAsync().Result.ToString());
+				throw CsSandboxClientException.Create(response);
 			}
 
 			return await response.Content.ReadAsAsync<PublicSubmissionDetails>();

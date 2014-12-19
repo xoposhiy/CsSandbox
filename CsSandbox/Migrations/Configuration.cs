@@ -7,14 +7,14 @@ namespace CsSandbox.Migrations
 	using System.Data.Entity.Migrations;
 
 
-	internal sealed class Configuration : DbMigrationsConfiguration<DataContext.CsSandboxDb>
+	internal sealed class Configuration : DbMigrationsConfiguration<CsSandboxDb>
     {
         public Configuration()
         {
             AutomaticMigrationsEnabled = false;
         }
 
-        protected override void Seed(DataContext.CsSandboxDb context)
+        protected override void Seed(CsSandboxDb context)
         {
 			//  This method will be called after migrating to the latest version.
 
@@ -28,6 +28,17 @@ namespace CsSandbox.Migrations
 		        });
 		        db.SaveChanges();
 	        }
+
+			if (!context.Users.Any(user => user.Id == "tester2"))
+			{
+				var db = new CsSandboxDb();
+				db.Users.Add(new User
+				{
+					Id = "tester2",
+					Token = "tester2"
+				});
+				db.SaveChanges();
+			}
 
 	        //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data. E.g.
