@@ -17,6 +17,7 @@ namespace CsSandbox.DataContext
 		void SetExceptionResult(string id, SolutionException ex);
 		void SetExceptionResult(string id, OutOfMemoryException ex);
 		void SetExceptionResult(string id, SecurityException ex);
+		void SetExceptionResult(string id, MemberAccessException ex);
 		void SetExceptionResult(string id, Exception ex);
 		void SetExceptionResult(string id, TargetInvocationException exception);
 		void SetDone(string id);

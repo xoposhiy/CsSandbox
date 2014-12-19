@@ -35,5 +35,16 @@ namespace CsSandbox.Sandbox
 			return Tuple.Create<Exception, LimitedStringWriter, LimitedStringWriter>(null, stdout, stderr);
 		}
 
+#region Security Test
+
+		public static void MustDontWork()
+		{
+			Console.WriteLine("Security broken!!!");
+		}
+
+		public static int Secret = 42;
+
+#endregion
+
 	}
 }

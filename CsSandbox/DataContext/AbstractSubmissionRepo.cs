@@ -79,6 +79,11 @@ namespace CsSandbox.DataContext
 			SetExceptionResult(id, Verdict.SecurityException, null);
 		}
 
+		public void SetExceptionResult(string id, MemberAccessException ex)
+		{
+			SetExceptionResult(id, Verdict.SecurityException, null);
+		}
+
 		public void SetExceptionResult(string id, Exception ex)
 		{
 			SetExceptionResult(id, Verdict.RuntimeError, ex.ToString());

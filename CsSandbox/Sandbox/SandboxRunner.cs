@@ -25,6 +25,14 @@ namespace CsSandbox.Sandbox
 		private bool _hasTimeLimit;
 		private bool _hasMemoryLimit;
 
+		private static readonly string[] UsesAssemblies =
+		{
+			"System.dll", 
+			"System.Core.dll",
+			"System.Linq.dll", 
+			"mscorlib.dll",
+		};
+
 		public SandboxRunner(string id, SubmissionModel submission)
 		{
 			_id = id;
@@ -82,7 +90,7 @@ namespace CsSandbox.Sandbox
 		private CompilerResults CreateAssemby()
 		{
 			var provider = new CSharpCodeProvider(new Dictionary<string, string> {{"CompilerVersion", "v4.0"}});
-			var compilerParameters = new CompilerParameters
+			var compilerParameters = new CompilerParameters(UsesAssemblies)
 			{
 				GenerateExecutable = true
 			};
