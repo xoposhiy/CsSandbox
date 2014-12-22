@@ -1,8 +1,10 @@
 ﻿using System;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
+using System.Threading;
 
 namespace CsSandbox.Sandbox
 {
@@ -12,14 +14,19 @@ namespace CsSandbox.Sandbox
 
 		public Tuple<Exception, LimitedStringWriter, LimitedStringWriter> ExecuteUntrustedCode(MethodInfo entryPoint, TextReader stdin)
 		{
+			(new PermissionSet(PermissionState.Unrestricted)).Assert(); // Need to setup streams and invoke non-public Main in non-public class
+
+			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+
 			var stdout = new LimitedStringWriter();
 			var stderr = new LimitedStringWriter();
-
-			(new PermissionSet(PermissionState.Unrestricted)).Assert(); // Need to setup streams and invoke non-public Main in non-public class
 
 			Console.SetIn(stdin);
 			Console.SetOut(stdout);
 			Console.SetError(stderr);
+
+			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+			Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
 
 			try
 			{
