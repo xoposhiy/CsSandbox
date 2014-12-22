@@ -1,5 +1,4 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using CsSandboxApi;
 using NUnit.Framework;
 
@@ -20,70 +19,37 @@ namespace CsSandboxTests
 		}
 
 		[Test]
+		[ExpectedException(typeof(CsSandboxClientException.Unauthorized))]
 		public static async void TestUnauthorized()
 		{
-			try
-			{
-				var client = new CsSandboxClient("testUnauthorized", Adress);
-				await client.Submit(Code, "");
-			}
-			catch (CsSandboxClientException.Unauthorized)
-			{
-				Assert.Pass();
-			}
-			catch (Exception)
-			{
-				Assert.Fail("Unexpected exception ");
-			}
-			Assert.Fail("No exeption");
+			var client = new CsSandboxClient("testUnauthorized", Adress);
+			await client.CreateSubmit(Code, "");
 		}
 
 		[Test]
+		[ExpectedException(typeof(CsSandboxClientException.SubmissionNotFound))]
 		public static async void TestSubmissionNotFound()
 		{
-			try
-			{
-				var client = new CsSandboxClient("tester", Adress);
-				await client.GetSubmissionStatus("incorrect");
-			}
-			catch (CsSandboxClientException.SubmissionNotFound)
-			{
-				Assert.Pass();
-			}
-			catch (Exception)
-			{
-				Assert.Fail("Unexpected exception ");
-			}
-			Assert.Fail("No exeption");
+			var client = new CsSandboxClient("tester", Adress);
+			await client.GetSubmissionStatus("incorrect");
 		}
 
 		[Test]
+		[ExpectedException(typeof(CsSandboxClientException.Forbidden))]
 		public static async void TestForbidden()
 		{
-			try
-			{
-				var client = new CsSandboxClient("tester", Adress);
-				var submission = await client.Submit(Code, "");
-				var details = await submission.GetDetails();
-				client = new CsSandboxClient("tester2", Adress);
-				await client.GetSubmissionStatus(details.Id);
-			}
-			catch (CsSandboxClientException.Forbidden)
-			{
-				Assert.Pass();
-			}
-			catch (Exception ex)
-			{
-				Assert.Fail("Unexpected exception " + ex);
-			}
-			Assert.Fail("No exeption");
+			var client = new CsSandboxClient("tester", Adress);
+			var submission = await client.CreateSubmit(Code, "");
+			var details = await submission.GetDetails();
+			client = new CsSandboxClient("tester2", Adress);
+			await client.GetSubmissionStatus(details.Id);
 		}
 
 
 		private static async Task<PublicSubmissionDetails> GetDetails(string code, string input)
 		{
 			var client = new CsSandboxClient("tester", Adress);
-			var submission = await client.Submit(code, input);
+			var submission = await client.CreateSubmit(code, input);
 			Assert.NotNull(submission);
 
 			var count = 0;

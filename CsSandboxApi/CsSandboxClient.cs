@@ -19,7 +19,7 @@ namespace CsSandboxApi
 			_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 		}
 
-		public async Task<Submission> Submit(string code, string input, bool needRun = true)
+		public async Task<Submission> CreateSubmit(string code, string input, bool needRun = true)
 		{
 			var model = new SubmissionModel
 			{
@@ -62,6 +62,24 @@ namespace CsSandboxApi
 			}
 
 			return await response.Content.ReadAsAsync<PublicSubmissionDetails>();
+		}
+
+		public async Task<PublicSubmissionDetails> Submit(string code, string input)
+		{
+			var submission = await CreateSubmit(code, input);
+
+			var count = 0;
+			var lastStatus = await submission.GetStatus();
+			while (lastStatus != SubmissionStatus.Done && count < 30)
+			{
+				await Task.Delay(1000);
+				++count;
+				lastStatus = await submission.GetStatus();
+			}
+			if (lastStatus != SubmissionStatus.Done)
+				return null;
+
+			return await submission.GetDetails();
 		}
 
 		private string GetUriForSubmission(string path, string submissionId)
