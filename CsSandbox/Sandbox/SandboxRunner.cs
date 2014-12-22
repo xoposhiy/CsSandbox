@@ -118,7 +118,7 @@ namespace CsSandbox.Sandbox
 				Thread.Sleep(100);
 			}
 
-			task.Abort();
+			task.Abort(); // TODO: It don't work!!!
 
 			if (_hasTimeLimit)
 				return new HasException(new TimeLimitException());
@@ -132,7 +132,7 @@ namespace CsSandbox.Sandbox
 			var stdout = res.Item2;
 			var stderr = res.Item3;
 			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
-				return new HasException( new OutputLimitException());
+				return new HasException(new OutputLimitException());
 
 			return new NormalRun(stdout.ToString(), stderr.ToString());
 		}

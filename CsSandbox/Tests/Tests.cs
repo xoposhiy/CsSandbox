@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
+using System.Threading;
 using System.Threading.Tasks;
 using CsSandbox.Models;
 using CsSandboxApi;
@@ -14,9 +16,10 @@ namespace CsSandbox.Tests
 
 		[TestCase(@"namespace Test { public class Program { static public void Main() { return ; } } }", "", "", "", TestName = "Public class and Main")]
 		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(42);}}", "", "42\r\n", "", TestName = "Output")]
-		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(4.2);}}", "", "4.2\r\n", "", TestName = "Invariant culture")]
+		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(4.2);}}", "", "4.2\r\n", "", TestName = "Output invariant culture")]
+		[TestCase(@"using System; public class M{static public void Main(){Console.Error.WriteLine(4.2);}}", "", "", "4.2\r\n", TestName = "Error invariant culture")]
 		[TestCase(@"using System; using System.Globalization; public class M{static public void Main(){var a = 4.2; Console.WriteLine(a.ToString(CultureInfo.InvariantCulture));}}", "", "4.2\r\n", "", TestName = "Set Invariant Culture in ToString")]
-		[TestCase(@"using System; using System.Globalization; class A { private static void Main() { Console.WriteLine(CultureInfo.CurrentCulture.EnglishName); } }", "", "Invariant Language (Invariant Country)\r\n", "", TestName = "Get CultureInfo")]
+		[TestCase(@"using System; using System.Globalization; class A { private static void Main() { Console.WriteLine(CultureInfo.CurrentCulture.EnglishName); } }", "", "Invariant Language (Invariant Country)\r\n", "", TestName = "Get Globlal CultureInfo")]
 		[TestCase(@"using System; class M{static void Main(){System.Console.WriteLine(Tuple.Create(1, 2));}}", "", "(1, 2)\r\n", "", TestName = "Tuple")]
 		[TestCase(@"using System; public class M{static public void Main(){System.Console.Error.WriteLine(42);}}", "", "", "42\r\n", TestName = "Output error")]
 		[TestCase(@"using System; public class M{static public void Main(){System.Console.WriteLine(Console.ReadLine());}}", "asdfasdf", "asdfasdf\r\n", "", TestName = "Read")]
@@ -115,7 +118,28 @@ namespace CsSandbox.Tests
 			Assert.IsNullOrEmpty(details.Error);
 			Assert.IsNotNullOrEmpty(details.Output);
 		}
-		
+
+		[Test]
+		[Explicit]
+		public static async void TestAbort()
+		{
+			const string code = @"class A { static void Main() { try { while(true) {} } finally { A.Main(); } } }";
+			const int threads = 10;
+			var a = Process.GetCurrentProcess().Threads.Count;
+			for (var i = 0; i < threads; ++i)
+			{
+				var details = await GetDetails(code, "");
+				Console.Out.WriteLine("{0}: {1}", i + 1, details.Verdict);
+			}
+			Console.Out.WriteLine("{0}", Process.GetCurrentProcess().Threads.Count - a);
+			for (var i = 0; i < threads; ++i)
+			{
+				Thread.Sleep(1000);
+				Console.Out.WriteLine("{0}", Process.GetCurrentProcess().Threads.Count - a);
+			}
+			Assert.AreEqual(0, Process.GetCurrentProcess().Threads.Count - a);
+		}
+
 		private static async Task<PublicSubmissionDetails> GetDetails(string code, string input)
 		{
 			const string userId = "tester";
