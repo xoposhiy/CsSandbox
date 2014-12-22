@@ -106,6 +106,7 @@ namespace CsSandbox.DataContext
 			var submission = Find(id);
 			submission.Verdict = Verdict.SandboxError;
 			submission.Error = message;
+			submission.Status = SubmissionStatus.Done;
 			Save(submission);
 		}
 

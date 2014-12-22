@@ -25,9 +25,6 @@ namespace CsSandbox.Sandbox
 			Console.SetOut(stdout);
 			Console.SetError(stderr);
 
-			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
-			Thread.CurrentThread.CurrentUICulture = CultureInfo.InvariantCulture;
-
 			try
 			{
 				entryPoint.Invoke(null, null);
