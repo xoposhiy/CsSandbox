@@ -50,7 +50,7 @@ namespace CsSandbox.DataContext
 		{
 			var submission = Find(id);
 			if (isCompilationError)
-				submission.Verdict = Verdict.ComplationError;
+				submission.Verdict = Verdict.CompilationError;
 			submission.CompilationOutput = compilationOutput;
 			Save(submission);
 		}
