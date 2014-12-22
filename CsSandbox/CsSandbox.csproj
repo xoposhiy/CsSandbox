@@ -200,6 +200,10 @@
     <Compile Include="Migrations\201412100955465_init.Designer.cs">
       <DependentUpon>201412100955465_init.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201412220624579_IncreaseLimits.cs" />
+    <Compile Include="Migrations\201412220624579_IncreaseLimits.Designer.cs">
+      <DependentUpon>201412220624579_IncreaseLimits.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\SubmissionDetails.cs" />
@@ -307,6 +311,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Migrations\201412100955465_init.resx">
       <DependentUpon>201412100955465_init.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201412220624579_IncreaseLimits.resx">
+      <DependentUpon>201412220624579_IncreaseLimits.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

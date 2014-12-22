@@ -12,7 +12,7 @@ namespace CsSandbox.Models
 		public string Id { get; set; }
 
 		[Required]
-		[StringLength(4000)]
+		[StringLength(64 * 1024)]
 		public string Code { get; set; }
 
 		public virtual User User { get; set; }
@@ -20,7 +20,7 @@ namespace CsSandbox.Models
 		[Required]
 		public string UserId { get; set; }
 
-		[StringLength(4000)]
+		[StringLength(10 * 1024 * 1024)]
 		public string Input { get; set; }
 
 		[Required]
@@ -31,13 +31,13 @@ namespace CsSandbox.Models
 
 		public Verdict Verdict { get; set; }
 
-		[StringLength(4000)]
+		[StringLength(10 * 1024 * 1024)]
 		public string CompilationOutput { get; set; }
 
-		[StringLength(4000)]
+		[StringLength(10 * 1024 * 1024)]
 		public string Output { get; set; }
 
-		[StringLength(4000)]
+		[StringLength(10 * 1024 * 1024)]
 		public string Error { get; set; }
 
 		public bool NeedRun { get; set; }

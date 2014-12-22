@@ -7,7 +7,7 @@ namespace CsSandbox.Sandbox
 	public class LimitedStringWriter : StringWriter
 	{
 		private readonly int _maxLength;
-		private const int DefaultLength = 4000;
+		private const int DefaultLength = 10 * 1024 * 1024;
 
 		public bool HasOutputLimit { get; private set; }
 
