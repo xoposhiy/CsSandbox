@@ -25,12 +25,11 @@ namespace CsSandboxRunner
 		{
 			var uri = GetUri("/TryGetSubmission");
 			var response = await _httpClient.GetAsync(uri);
-			if (!response.IsSuccessStatusCode)
-			{
-				Console.Out.WriteLine(response.ToString());
-				return null;
-			}
-			return await response.Content.ReadAsAsync<InternalSubmissionModel>();
+			if (response.IsSuccessStatusCode) return await response.Content.ReadAsAsync<InternalSubmissionModel>();
+
+			Console.Out.WriteLine(DateTime.Now.ToString("HH:mm:ss"));
+			Console.Out.WriteLine(response.ToString());
+			return null;
 		}
 
 		public async void SendResult(string id, RunningResults result)
@@ -40,6 +39,7 @@ namespace CsSandboxRunner
 
 			if (responce.IsSuccessStatusCode) return;
 
+			Console.Out.WriteLine(DateTime.Now.ToString("HH:mm:ss"));
 			Console.Out.WriteLine(responce.ToString());
 			Console.Out.WriteLine(result);
 		}

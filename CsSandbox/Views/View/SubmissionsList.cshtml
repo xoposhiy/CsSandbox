@@ -22,7 +22,7 @@
 		var st = detail.Status == SubmissionStatus.Done ? "success" : "danger";
 		<tr class="@st" onclick="openDetails('@detail.Id')">
 			<td>@ind</td>
-			<td>@detail.Timestamp.ToString("dd.MM.yy hh:mm:ss")</td>
+			<td>@detail.Timestamp.ToString("dd.MM.yy HH:mm:ss")</td>
 			<td>@detail.Id</td>
 			<td>@detail.Status.ToString()</td>
 		</tr>
