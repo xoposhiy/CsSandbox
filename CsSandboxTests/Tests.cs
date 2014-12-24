@@ -1,4 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using CsSandboxApi;
 using NUnit.Framework;
 
@@ -45,6 +49,29 @@ namespace CsSandboxTests
 			await client.GetSubmissionStatus(details.Id);
 		}
 
+		[Test]
+		[Explicit]
+		public static async void TestManySubmissions()
+		{
+			var client = new CsSandboxClient("tester", Adress, 0);
+			var submissions = new List<Submission>();
+			for (var i = 0; i < 100; ++i)
+			{
+				submissions.Add(await client.CreateSubmit("class A { static void Main() { while(true) {} } }", ""));
+			}
+			while (submissions.Any())
+			{
+				var tmp = new List<Submission>();
+				foreach (var submission in submissions)
+				{
+					var status = await submission.GetStatus();
+					if (status != SubmissionStatus.Done)
+						tmp.Add(submission);
+				}
+				submissions = tmp;
+				Console.Out.WriteLine("{0}", submissions.Count);
+			}
+		}
 
 		private static async Task<PublicSubmissionDetails> GetDetails(string code, string input)
 		{
