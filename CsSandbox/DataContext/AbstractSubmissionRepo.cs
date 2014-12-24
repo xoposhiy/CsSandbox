@@ -8,8 +8,10 @@ namespace CsSandbox.DataContext
 {
 	public abstract class AbstractSubmissionRepo : ISubmissionRepo
 	{
-		protected abstract SubmissionDetails Find(string id);
-		protected abstract void Save(SubmissionDetails submission);
+		abstract protected SubmissionDetails Find(string id);
+		abstract protected void Save(SubmissionDetails submission);
+		abstract public IEnumerable<SubmissionDetails> GetAllSubmissions(string userId, int max, int skip);
+		abstract public SubmissionDetails FindUnhandled();
 
 		public SubmissionDetails AddSubmission(string userId, SubmissionModel submission)
 		{
@@ -26,8 +28,6 @@ namespace CsSandbox.DataContext
 			};
 			Save(submissionDetail);
 
-			Unhandled.Enqueue(submissionDetail.Id);
-
 			return submissionDetail;
 		}
 
@@ -35,8 +35,6 @@ namespace CsSandbox.DataContext
 		{
 			return Find(id);
 		}
-
-		public abstract IEnumerable<SubmissionDetails> GetAllSubmissions(string userId, int max, int skip);
 
 		public void SaveResults(string id, RunningResults result)
 		{
@@ -49,17 +47,5 @@ namespace CsSandbox.DataContext
 			Save(submission);
 		}
 
-		private static readonly Queue<string> Unhandled = new Queue<string>();
-
-		public SubmissionDetails FindUnhandled()
-		{
-			if (Unhandled.Count == 0)
-				return null;
-			var id = Unhandled.Dequeue();
-			var submission = FindDetails(id);
-			submission.Status = SubmissionStatus.Running;
-			Save(submission);
-			return submission;
-		}
 	}
 }
