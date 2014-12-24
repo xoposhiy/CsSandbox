@@ -21,14 +21,11 @@ namespace CsSandboxRunner
 			var token = args[1];
 			int threadsCount;
 			if (args.Length < 3)
-				threadsCount = Environment.ProcessorCount;
+				threadsCount = 1;
 			else
 			{
 				if (!int.TryParse(args[2], out threadsCount))
-				{
-					Console.Error.WriteLine("Warning: Can't parse threads count. Use processor count");
-					threadsCount = Environment.ProcessorCount;
-				}
+					threadsCount = 1;
 			}
 
 
@@ -65,11 +62,7 @@ namespace CsSandboxRunner
 					continue;
 				}
 
-				Console.Out.WriteLine("{0} : start", submission.Id);
-
 				var result = new SandboxRunner(submission).Run();
-
-				Console.Out.WriteLine("{0} : end", submission.Id);
 
 				client.SendResult(submission.Id, result);
 			}

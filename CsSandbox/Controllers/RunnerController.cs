@@ -34,19 +34,12 @@ namespace CsSandbox.Controllers
 
 	    [HttpPost]
 		[Route("PostResult")]
-	    public void PostResult([FromUri]string token, [FromUri]string id, RunningResultContainer resultContainer)
+	    public void PostResult([FromUri]string token, [FromUri]string id, RunningResults result)
 	    {
 			if (!ModelState.IsValid)
 				throw new HttpResponseException(HttpStatusCode.BadRequest);
 			CheckRunner(token);
 
-		    IRunningResult result = null;
-		    if (resultContainer.CompilationOnly != null)
-			    result = resultContainer.CompilationOnly;
-		    if (resultContainer.HasException != null)
-			    result = resultContainer.HasException;
-		    if (resultContainer.NormalRun != null)
-			    result = resultContainer.NormalRun;
 			_sandboxHandler.SaveResult(id, result);
 	    }
 

@@ -33,15 +33,15 @@ namespace CsSandboxRunner
 			return await response.Content.ReadAsAsync<InternalSubmissionModel>();
 		}
 
-		public async void SendResult(string id, IRunningResult result)
+		public async void SendResult(string id, RunningResults result)
 		{
 			var uri = GetUri("/PostResult", new[] {"id", id});
-			var responce = await _httpClient.PostAsJsonAsync(uri, new RunningResultContainer((dynamic)result));
-			if (!responce.IsSuccessStatusCode)
-			{
-				Console.Out.WriteLine(responce.ToString());
-				Console.Out.WriteLine(result);
-			}
+			var responce = await _httpClient.PostAsJsonAsync(uri, result);
+
+			if (responce.IsSuccessStatusCode) return;
+
+			Console.Out.WriteLine(responce.ToString());
+			Console.Out.WriteLine(result);
 		}
 
 		private string GetUri(string path, params string[][] parameters)

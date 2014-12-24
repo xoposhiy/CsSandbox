@@ -25,25 +25,9 @@ namespace CsSandbox.Sandbox
 			return id;
 		}
 
-		public void SaveResult(string id, IRunningResult result)
+		public void SaveResult(string id, RunningResults result)
 		{
-			_submissions.SetCompilationInfo(id, result.IsCompilationError, result.CompilationOutput);
-			SaveResult(id, (dynamic)result);
-			_submissions.SetDone(id);
-		}
-
-		private void SaveResult(string id, CompilationOnly result)
-		{
-		}
-
-		private void SaveResult(string id, HasException result)
-		{
-			_submissions.SetExceptionResult(id, (dynamic)result.Exception);
-		}
-
-		private void SaveResult(string id, NormalRun result)
-		{
-			_submissions.SetRunInfo(id, result.Stdout, result.Stderr);
+			_submissions.SaveResults(id, result);
 		}
 
 		public SubmissionDetails FindDetails(string id)

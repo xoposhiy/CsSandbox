@@ -54,13 +54,13 @@ namespace CsSandboxTests
 
 			var count = 0;
 			var lastStatus = await submission.GetStatus();
-			while (lastStatus != SubmissionStatus.Done && count < 30)
+			while (lastStatus != SubmissionStatus.Done && count < 300)
 			{
-				await Task.Delay(1000);
+				await Task.Delay(100);
 				++count;
 				lastStatus = await submission.GetStatus();
 			}
-			Assert.Less(count, 30, "too slow...");
+			Assert.Less(count, 300, "too slow...");
 			var details = await submission.GetDetails();
 
 			Assert.NotNull(details);

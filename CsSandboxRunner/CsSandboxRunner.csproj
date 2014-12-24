@@ -53,6 +53,7 @@
     <Compile Include="LimitedStringWriter.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RunningResultsExtention.cs" />
     <Compile Include="Sandboxer.cs" />
     <Compile Include="SandboxRunner.cs" />
     <Compile Include="Tests.cs" />
@@ -62,6 +63,10 @@
     <None Include="key.snk" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\CsSandboxApi\CsSandboxApi.csproj">
+      <Project>{67548E85-3E16-4863-A080-6EB49FD72F34}</Project>
+      <Name>CsSandboxApi</Name>
+    </ProjectReference>
     <ProjectReference Include="..\CsSandboxRunnerApi\CsSandboxRunnerApi.csproj">
       <Project>{A6AEB3AE-0CC2-4F1A-98E3-FEA3B055D5AC}</Project>
       <Name>CsSandboxRunnerApi</Name>

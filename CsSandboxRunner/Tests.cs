@@ -4,6 +4,7 @@ using System.Globalization;
 using System.Reflection;
 using System.Security;
 using System.Threading;
+using CsSandboxApi;
 using CsSandboxRunnerApi;
 using NUnit.Framework;
 
@@ -42,18 +43,17 @@ namespace CsSandboxRunner
 		public static void TestOk(string code, string input, string output, string error)
 		{
 			var details = GetDetails(code, input);
-			Assert.IsInstanceOf<NormalRun>(details);
-			var run = details as NormalRun;
-			Assert.AreEqual(output, run.Stdout);
-			Assert.AreEqual(error, run.Stderr);
+			Assert.AreEqual(Verdict.Ok, details.Verdict);
+			Assert.AreEqual(output, details.Output);
+			Assert.AreEqual(error, details.Error);
 		}
 
 		[TestCase("namespace Test { public class Program { static public void Main() { return 0; } } }",
 			TestName = "Return int in void Main")]
 		public static void TestCompilationError(string code)
 		{
-			var details = GetDetails(code, "", true);
-			Assert.IsInstanceOf<CompilationOnly>(details);
+			var details = GetDetails(code, "");
+			Assert.AreEqual(Verdict.CompilationError, details.Verdict);
 			Assert.IsNotNullOrEmpty(details.CompilationOutput);
 		}
 
@@ -72,12 +72,8 @@ namespace CsSandboxRunner
 		public static void TestSecurityException(string code)
 		{
 			var details = GetDetails(code, "");
-			Assert.IsInstanceOf<HasException>(details);
-			var exception = details as HasException;
-			Assert.IsInstanceOf<TargetInvocationException>(exception.Exception);
-			var innerException = exception.Exception.InnerException;
-			Console.Out.WriteLine(innerException.ToString());
-			Assert.True(innerException is SecurityException || innerException is MemberAccessException);
+			Assert.AreEqual(Verdict.SecurityException, details.Verdict);
+			Assert.IsNullOrEmpty(details.Error);
 		}
 
 		[TestCase(
@@ -86,8 +82,8 @@ namespace CsSandboxRunner
 		public static void TestRuntimeError(string code)
 		{
 			var details = GetDetails(code, "");
-			Assert.IsInstanceOf<HasException>(details);
-			Assert.IsInstanceOf<Exception>((details as HasException).Exception);
+			Assert.AreEqual(Verdict.RuntimeError, details.Verdict);
+			Assert.IsNotNullOrEmpty(details.Error);
 		}
 
 		[TestCase(
@@ -102,8 +98,7 @@ namespace CsSandboxRunner
 		public static void TestOutputLimitError(string code)
 		{
 			var details = GetDetails(code.Replace("$limit", OutputLimit.ToString(CultureInfo.InvariantCulture)), "");
-			Assert.IsInstanceOf<HasException>(details);
-			Assert.IsInstanceOf<OutputLimitException>((details as HasException).Exception);
+			Assert.AreEqual(Verdict.OutputLimit, details.Verdict);
 		}
 
 		[TestCase(@"using System; class Program { static void Main() { var s = new string('*', $limit); Console.Write(s); }}",
@@ -111,10 +106,8 @@ namespace CsSandboxRunner
 		public static void TestOutputLimit(string code)
 		{
 			var details = GetDetails(code.Replace("$limit", OutputLimit.ToString(CultureInfo.InvariantCulture)), "");
-			Assert.IsInstanceOf<NormalRun>(details);
-			var run = details as NormalRun;
-			Assert.AreEqual(new string('*', OutputLimit), run.Stdout);
-			Assert.IsNullOrEmpty(run.Stderr);
+			Assert.AreEqual(Verdict.Ok, details.Verdict);
+			Assert.AreEqual(new string('*', OutputLimit), details.Output);
 		}
 
 		[TestCase(@"using System; class Program { static void Main() { int a = 0; while(true) { ++a; } }}",
@@ -124,8 +117,7 @@ namespace CsSandboxRunner
 		public static void TestTimeLimitError(string code)
 		{
 			var details = GetDetails(code, "");
-			Assert.IsInstanceOf<HasException>(details);
-			Assert.IsInstanceOf<TimeLimitException>((details as HasException).Exception);
+			Assert.AreEqual(Verdict.TimeLimit, details.Verdict);
 		}
 
 		[TestCase(
@@ -140,8 +132,7 @@ namespace CsSandboxRunner
 		public static void TestMemoryLimitError(string code)
 		{
 			var details = GetDetails(code, "");
-			Assert.IsInstanceOf<HasException>(details);
-			Assert.IsInstanceOf<MemoryLimitException>((details as HasException).Exception);
+			Assert.AreEqual(Verdict.MemoryLimit, details.Verdict);
 		}
 
 		[TestCase(
@@ -156,10 +147,8 @@ namespace CsSandboxRunner
 		public static void TestMemoryLimit(string code)
 		{
 			var details = GetDetails(code, "");
-			Assert.IsInstanceOf<NormalRun>(details);
-			var run = details as NormalRun;
-			Assert.IsNullOrEmpty(run.Stderr);
-			Assert.IsNotNullOrEmpty(run.Stdout);
+			Assert.AreEqual(Verdict.Ok, details.Verdict);
+			Assert.IsNotNullOrEmpty(details.Output);
 		}
 
 		[Test]
@@ -181,7 +170,7 @@ namespace CsSandboxRunner
 			Assert.AreEqual(0, Process.GetCurrentProcess().Threads.Count - a);
 		}
 
-		private static IRunningResult GetDetails(string code, string input, bool isCompilationError = false)
+		private static RunningResults GetDetails(string code, string input)
 		{
 			var model = new InternalSubmissionModel
 			{
@@ -192,7 +181,7 @@ namespace CsSandboxRunner
 			};
 
 			var result = new SandboxRunner(model).Run();
-			Assert.AreEqual(isCompilationError, result.IsCompilationError);
+			Assert.IsNotNull(result);
 			return result;
 		}
 	}

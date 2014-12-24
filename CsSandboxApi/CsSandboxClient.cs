@@ -10,10 +10,12 @@ namespace CsSandboxApi
 	{
 		private readonly string _token;
 		private readonly HttpClient _httpClient;
+		private readonly int _timeLimit;
 
-		public CsSandboxClient(string token, string baseAddress)
+		public CsSandboxClient(string token, string baseAddress, int timeLimit = 30)
 		{
 			_token = token;
+			_timeLimit = timeLimit;
 			_httpClient = new HttpClient {BaseAddress = new Uri(baseAddress)};
 			_httpClient.DefaultRequestHeaders.Accept.Clear();
 			_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
@@ -68,12 +70,12 @@ namespace CsSandboxApi
 		{
 			var submission = await CreateSubmit(code, input);
 
-			var count = 0;
+			var count = _timeLimit;
 			var lastStatus = await submission.GetStatus();
-			while (lastStatus != SubmissionStatus.Done && count < 30)
+			while (lastStatus != SubmissionStatus.Done && count >= 0)
 			{
 				await Task.Delay(1000);
-				++count;
+				--count;
 				lastStatus = await submission.GetStatus();
 			}
 			if (lastStatus != SubmissionStatus.Done)

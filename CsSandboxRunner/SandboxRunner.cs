@@ -6,6 +6,7 @@ using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
 using System.Threading;
+using CsSandboxApi;
 using CsSandboxRunnerApi;
 using Microsoft.CSharp;
 
@@ -24,6 +25,8 @@ namespace CsSandboxRunner
 		private bool _hasTimeLimit;
 		private bool _hasMemoryLimit;
 
+		private readonly RunningResults _result = new RunningResults();
+
 		private static readonly string[] UsesAssemblies =
 		{
 			"System.dll", 
@@ -37,23 +40,26 @@ namespace CsSandboxRunner
 			_submission = submission;
 		}
 
-		public IRunningResult Run()
+		public RunningResults Run()
 		{
 			var assembly = CreateAssemby();
 
-			var compilationInfo = CompilationOnly.Create(assembly);
+			_result.AddCompilationInfo(assembly);
 
-			if (compilationInfo.IsCompilationError)
-				return compilationInfo;
+			if (_result.IsCompilationError())
+				return _result;
 
 			if (!_submission.NeedRun)
-				return compilationInfo;
+				return _result;
 
 			var domain = CreateDomain(assembly);
 			var sandboxer = CreateSandboxer(domain);
 
-			var result = RunSandboxer(domain, sandboxer, assembly);
-			return result.AddCompilationInfo(compilationInfo);
+			RunSandboxer(domain, sandboxer, assembly);
+
+			_result.Finalize();
+
+			return _result;
 		}
 
 		private static Sandboxer CreateSandboxer(AppDomain domain)
@@ -98,7 +104,7 @@ namespace CsSandboxRunner
 			return assembly;
 		}
 
-		private IRunningResult RunSandboxer(AppDomain domain, Sandboxer sandboxer, CompilerResults assembly)
+		private void RunSandboxer(AppDomain domain, Sandboxer sandboxer, CompilerResults assembly)
 		{
 			var stdin = new StringReader(_submission.Input ?? "");
 			Tuple<Exception, LimitedStringWriter, LimitedStringWriter> res = null;
@@ -119,20 +125,24 @@ namespace CsSandboxRunner
 			task.Abort(); // TODO: It don't work!!!
 
 			if (_hasTimeLimit)
-				return new HasException(new TimeLimitException());
+			{
+				_result.Verdict = Verdict.TimeLimit;
+				return;
+			}
 
 			if (_hasMemoryLimit)
-				return new HasException(new MemoryLimitException());
+			{
+				_result.Verdict = Verdict.MemoryLimit;
+				return;
+			}
 
 			if (res.Item1 != null)
-				return new HasException(res.Item1);
+			{
+				_result.HandleException(res.Item1);
+				return;
+			}
 
-			var stdout = res.Item2;
-			var stderr = res.Item3;
-			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
-				return new HasException(new OutputLimitException());
-
-			return new NormalRun(stdout.ToString(), stderr.ToString());
+			_result.HandleOutput(res.Item2, res.Item3);
 		}
 
 		private bool IsMemoryLimitExpected(AppDomain domain, long maxMemory)
