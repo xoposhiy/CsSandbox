@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace CsSandbox.Sandbox
+namespace CsSandboxRunner
 {
 	public class LimitedStringWriter : StringWriter
 	{

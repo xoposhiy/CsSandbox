@@ -7,5 +7,6 @@
 		NotFound = 2,
 		AccessDeny = 3,
 		Error = 4,
+		Running = 5,
 	}
 }

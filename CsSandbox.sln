@@ -9,6 +9,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSandboxApi", "CsSandboxAp
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSandboxTests", "CsSandboxTests\CsSandboxTests.csproj", "{46AD200E-507B-4DFF-BE82-B18DF1E9ED70}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSandboxRunnerApi", "CsSandboxRunnerApi\CsSandboxRunnerApi.csproj", "{A6AEB3AE-0CC2-4F1A-98E3-FEA3B055D5AC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CsSandboxRunner", "CsSandboxRunner\CsSandboxRunner.csproj", "{C57BB605-E4C4-4D8D-8919-BAC3525F7615}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +31,14 @@ Global
 		{46AD200E-507B-4DFF-BE82-B18DF1E9ED70}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{46AD200E-507B-4DFF-BE82-B18DF1E9ED70}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{46AD200E-507B-4DFF-BE82-B18DF1E9ED70}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A6AEB3AE-0CC2-4F1A-98E3-FEA3B055D5AC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6AEB3AE-0CC2-4F1A-98E3-FEA3B055D5AC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6AEB3AE-0CC2-4F1A-98E3-FEA3B055D5AC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6AEB3AE-0CC2-4F1A-98E3-FEA3B055D5AC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C57BB605-E4C4-4D8D-8919-BAC3525F7615}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C57BB605-E4C4-4D8D-8919-BAC3525F7615}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C57BB605-E4C4-4D8D-8919-BAC3525F7615}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C57BB605-E4C4-4D8D-8919-BAC3525F7615}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

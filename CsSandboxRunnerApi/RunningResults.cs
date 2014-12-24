@@ -3,7 +3,7 @@ using System.CodeDom.Compiler;
 using System.Linq;
 using System.Text;
 
-namespace CsSandbox.Sandbox
+namespace CsSandboxRunnerApi
 {
 	public abstract class IRunningResult
 	{
@@ -87,6 +87,36 @@ namespace CsSandbox.Sandbox
 		public override IRunningResult AddCompilationInfo(CompilationOnly compilationInfo)
 		{
 			return new NormalRun(compilationInfo.IsCompilationError, compilationInfo.CompilationOutput, Stdout, Stderr);
+		}
+	}
+
+	public class RunningResultContainer
+	{
+		public CompilationOnly CompilationOnly;
+		public HasException HasException;
+		public NormalRun NormalRun;
+
+		public RunningResultContainer()
+		{
+		}
+
+		public RunningResultContainer(CompilationOnly compilationOnly)
+		{
+			CompilationOnly = compilationOnly;
+		}
+
+		public RunningResultContainer(HasException hasException)
+		{
+			HasException = hasException;
+		}
+
+		public RunningResultContainer(NormalRun normalRun)
+		{
+			NormalRun = normalRun;
+		}
+
+		public RunningResultContainer(IRunningResult result)
+		{
 		}
 	}
 }

@@ -14,5 +14,6 @@ namespace CsSandbox.DataContext
 
 		public DbSet<SubmissionDetails> Submission { get; set; }
 		public DbSet<User> Users { get; set; }
+		public DbSet<Roles> Roles { get; set; }
 	}
 }

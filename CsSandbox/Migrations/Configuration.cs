@@ -40,6 +40,28 @@ namespace CsSandbox.Migrations
 				db.SaveChanges();
 			}
 
+	        if (!context.Users.Any(user => user.Id == "runner"))
+	        {
+				var db = new CsSandboxDb();
+				db.Users.Add(new User
+				{
+					Id = "runner",
+					Token = "runner"
+				});
+				db.SaveChanges();
+			}
+
+	        if (!context.Roles.Any(roles => roles.UserId == "runner" && roles.Role == Role.Runner))
+	        {
+		        var db = new CsSandboxDb();
+		        db.Roles.Add(new Roles
+		        {
+			        UserId = "runner",
+			        Role = Role.Runner
+		        });
+		        db.SaveChanges();
+	        }
+
 	        //  You can use the DbSet<T>.AddOrUpdate() helper extension method 
             //  to avoid creating duplicate seed data. E.g.
             //

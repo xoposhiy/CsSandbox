@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 
 namespace CsSandbox.Models
 {
@@ -10,5 +11,7 @@ namespace CsSandbox.Models
 		[Required]
 		[StringLength(128)]
 		public string Token { get; set; }
+
+		public virtual List<Roles> Roles { get; set; }
 	}
 }

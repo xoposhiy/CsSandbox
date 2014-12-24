@@ -19,11 +19,7 @@
 	@foreach (var detail in  model.Submissions)
 	{
 		ind++;
-		var st = "";
-		if (detail.Status != SubmissionStatus.Waiting)
-		{
-			st = detail.Status == SubmissionStatus.Done ? "success" : "danger";
-		}
+		var st = detail.Status == SubmissionStatus.Done ? "success" : "danger";
 		<tr class="@st" onclick="openDetails('@detail.Id')">
 			<td>@ind</td>
 			<td>@detail.Timestamp.ToString("dd.MM.yy hh:mm:ss")</td>

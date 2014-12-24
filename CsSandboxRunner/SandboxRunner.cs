@@ -6,15 +6,14 @@ using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
 using System.Threading;
-using CsSandboxApi;
+using CsSandboxRunnerApi;
 using Microsoft.CSharp;
 
-namespace CsSandbox.Sandbox
+namespace CsSandboxRunner
 {
 	public class SandboxRunner 
 	{
-		private readonly string _id;
-		private readonly SubmissionModel _submission;
+		private readonly InternalSubmissionModel _submission;
 
 		private const int TimeLimitInSeconds = 1;
 		private static readonly TimeSpan TimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
@@ -33,9 +32,8 @@ namespace CsSandbox.Sandbox
 			"mscorlib.dll",
 		};
 
-		public SandboxRunner(string id, SubmissionModel submission)
+		public SandboxRunner(InternalSubmissionModel submission)
 		{
-			_id = id;
 			_submission = submission;
 		}
 
@@ -83,7 +81,7 @@ namespace CsSandbox.Sandbox
 				ApplicationBase = Path.GetDirectoryName(assemblyPath),
 			};
 
-			var domain = AppDomain.CreateDomain(_id, evidence, adSetup, permSet, fullTrustAssembly);
+			var domain = AppDomain.CreateDomain(_submission.Id, evidence, adSetup, permSet, fullTrustAssembly);
 			return domain;
 		}
 

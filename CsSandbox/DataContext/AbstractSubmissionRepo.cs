@@ -3,8 +3,8 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.Security;
 using CsSandbox.Models;
-using CsSandbox.Sandbox;
 using CsSandboxApi;
+using CsSandboxRunnerApi;
 
 namespace CsSandbox.DataContext
 {
@@ -27,6 +27,8 @@ namespace CsSandbox.DataContext
 				NeedRun = submission.NeedRun,
 			};
 			Save(submissionDetail);
+
+			Unhandled.Enqueue(submissionDetail.Id);
 
 			return submissionDetail;
 		}
@@ -118,6 +120,19 @@ namespace CsSandbox.DataContext
 			submission.Verdict = verdict;
 			submission.Error = message;
 			Save(submission);
+		}
+
+		private static readonly Queue<string> Unhandled = new Queue<string>();
+
+		public SubmissionDetails FindUnhandled()
+		{
+			if (Unhandled.Count == 0)
+				return null;
+			var id = Unhandled.Dequeue();
+			var submission = FindDetails(id);
+			submission.Status = SubmissionStatus.Running;
+			Save(submission);
+			return submission;
 		}
 	}
 }

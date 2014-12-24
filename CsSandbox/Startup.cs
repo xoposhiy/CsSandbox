@@ -10,7 +10,6 @@ namespace CsSandbox
     {
         public void Configuration(IAppBuilder app)
         {
-	        AppDomain.MonitoringIsEnabled = true;
             ConfigureAuth(app);
         }
     }

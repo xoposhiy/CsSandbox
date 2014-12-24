@@ -1,7 +1,7 @@
 ﻿using System;
 using CsSandboxApi;
 
-namespace CsSandbox.Sandbox
+namespace CsSandboxRunnerApi
 {
 	public class SolutionException : Exception
 	{

@@ -1,9 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 using CsSandbox.DataContext;
 using CsSandbox.Models;
 using CsSandboxApi;
+using CsSandboxRunnerApi;
 
 namespace CsSandbox.Sandbox
 {
@@ -23,25 +22,11 @@ namespace CsSandbox.Sandbox
 		public string Create(string userId, SubmissionModel model)
 		{
 			var id = _submissions.AddSubmission(userId, model).Id;
-
-			Task.Run(() => StartSandbox(id, model));
-
 			return id;
 		}
 
-		private void StartSandbox(string id, SubmissionModel model)
+		public void SaveResult(string id, IRunningResult result)
 		{
-			IRunningResult result;
-			try
-			{
-				result = new SandboxRunner(id, model).Run();
-			}
-			catch (Exception ex)
-			{
-				_submissions.SetSandboxException(id, ex.ToString());
-				return;
-			}
-
 			_submissions.SetCompilationInfo(id, result.IsCompilationError, result.CompilationOutput);
 			SaveResult(id, (dynamic)result);
 			_submissions.SetDone(id);

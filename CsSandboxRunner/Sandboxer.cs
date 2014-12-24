@@ -6,7 +6,7 @@ using System.Security;
 using System.Security.Permissions;
 using System.Threading;
 
-namespace CsSandbox.Sandbox
+namespace CsSandboxRunner
 {
 	[Serializable]
 	public class Sandboxer : MarshalByRefObject
