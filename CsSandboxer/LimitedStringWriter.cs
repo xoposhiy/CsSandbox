@@ -2,7 +2,7 @@
 using System.IO;
 using System.Text;
 
-namespace CsSandboxRunner
+namespace CsSandboxer
 {
 	public class LimitedStringWriter : StringWriter
 	{
@@ -63,6 +63,11 @@ namespace CsSandboxRunner
 			}
 
 			base.Write(value);
+		}
+
+		public string GetData()
+		{
+			return HasOutputLimit ? null : base.ToString();
 		}
 	}
 }

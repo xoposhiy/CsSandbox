@@ -41,16 +41,16 @@ namespace CsSandboxRunner
 			return results.Verdict == Verdict.CompilationError;
 		}
 
-		public static void HandleOutput(this RunningResults results, LimitedStringWriter stdout, LimitedStringWriter stderr)
+		public static void HandleOutput(this RunningResults results, string stdout, string stderr)
 		{
-			if (stdout.HasOutputLimit || stderr.HasOutputLimit)
+			if (stdout == null || stderr == null)
 			{
 				results.Verdict = Verdict.OutputLimit;
 			}
 			else
 			{
-				results.Output = stdout.ToString();
-				results.Error = stderr.ToString();
+				results.Output = stdout;
+				results.Error = stderr;
 			}
 		}
 

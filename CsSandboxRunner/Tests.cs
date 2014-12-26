@@ -64,10 +64,10 @@ namespace CsSandboxRunner
 			"using System; class A { static void Main() { foreach(var assembly in AppDomain.CurrentDomain.GetAssemblies()) Console.WriteLine(assembly.GetName().Name); }}",
 			TestName = "Loaded assemblies list")]
 		[TestCase(
-			"using System; using System.Threading; using System.Linq; using System.Reflection; using System.Security; [SecurityCritical] class A { static void Main() { var assemblies = Thread.GetDomain().GetAssemblies(); var ass = assemblies.FirstOrDefault(assembly => assembly.ToString().Contains(\"CsSandbox\")); var type = ass.GetType(\"CsSandboxRunner.Sandboxer\", true, true); if(type == null) Console.WriteLine(\"lol\"); else type.InvokeMember(\"MustDontWork\", BindingFlags.InvokeMethod, null, null, null); }}",
+			"using System; using System.Threading; using System.Linq; using System.Reflection; using System.Security; [SecurityCritical] class A { static void Main() { var assemblies = Thread.GetDomain().GetAssemblies(); var ass = assemblies.FirstOrDefault(assembly => assembly.ToString().Contains(\"CsSandbox\")); var type = ass.GetType(\"CsSandboxer.Sandboxer\", true, true); if(type == null) Console.WriteLine(\"lol\"); else type.InvokeMember(\"MustDontWork\", BindingFlags.InvokeMethod, null, null, null); }}",
 			TestName = "Method in sandboxer")]
 		[TestCase(
-			"using System; using System.Threading; using System.Linq; using System.Reflection; using System.Security; [SecurityCritical] class A { static void Main() { var assemblies = Thread.GetDomain().GetAssemblies(); var ass = assemblies.FirstOrDefault(assembly => assembly.ToString().Contains(\"CsSandbox\")); var type = ass.GetType(\"CsSandboxRunner.Sandboxer\", true, true); if(type == null) Console.WriteLine(\"lol\"); else type.InvokeMember(\"Secret\", BindingFlags.GetField, null, null, null);; }}",
+			"using System; using System.Threading; using System.Linq; using System.Reflection; using System.Security; [SecurityCritical] class A { static void Main() { var assemblies = Thread.GetDomain().GetAssemblies(); var ass = assemblies.FirstOrDefault(assembly => assembly.ToString().Contains(\"CsSandbox\")); var type = ass.GetType(\"CsSandboxer.Sandboxer\", true, true); if(type == null) Console.WriteLine(\"lol\"); else type.InvokeMember(\"Secret\", BindingFlags.GetField, null, null, null);; }}",
 			TestName = "Field in sandboxer")]
 		public static void TestSecurityException(string code)
 		{
@@ -129,6 +129,9 @@ namespace CsSandboxRunner
 		[TestCase(
 			@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(65 * 1024 * 1024); Console.WriteLine(mem); }}",
 			TestName = "Local List")]
+		[TestCase(
+			@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(65 * 1024 * 1024); Console.WriteLine(mem); while(true){} }}",
+			TestName = "TL after ML")]
 		public static void TestMemoryLimitError(string code)
 		{
 			var details = GetDetails(code, "");
@@ -160,21 +163,20 @@ namespace CsSandboxRunner
 			var a = Process.GetCurrentProcess().Threads.Count;
 			for (var i = 0; i < threads; ++i)
 			{
-				GetDetails(code, "");
+				new Thread(() => GetDetails(code, "")).Start();
 			}
 			for (var i = 0; i < threads; ++i)
 			{
 				Thread.Sleep(1000);
 				Console.Out.WriteLine("{0}", Process.GetCurrentProcess().Threads.Count - a);
 			}
-			Assert.AreEqual(0, Process.GetCurrentProcess().Threads.Count - a);
 		}
 
 		private static RunningResults GetDetails(string code, string input)
 		{
 			var model = new InternalSubmissionModel
 			{
-				Id = "",
+				Id = Guid.NewGuid().ToString(),
 				Code = code,
 				Input = input,
 				NeedRun = true

@@ -1,14 +1,15 @@
 ﻿using System;
 using System.CodeDom.Compiler;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
-using System.Security;
-using System.Security.Permissions;
-using System.Security.Policy;
+using System.IO.Pipes;
+using System.Runtime.Serialization;
 using System.Threading;
 using CsSandboxApi;
 using CsSandboxRunnerApi;
 using Microsoft.CSharp;
+using Newtonsoft.Json;
 
 namespace CsSandboxRunner
 {
@@ -52,44 +53,14 @@ namespace CsSandboxRunner
 			if (!_submission.NeedRun)
 				return _result;
 
-			var domain = CreateDomain(assembly);
-			var sandboxer = CreateSandboxer(domain);
-
-			RunSandboxer(domain, sandboxer, assembly);
+			
+			RunSandboxer(assembly);
 
 			_result.Finalize();
 
 			return _result;
 		}
 
-		private static Sandboxer CreateSandboxer(AppDomain domain)
-		{
-			var handle = Activator.CreateInstanceFrom(
-				domain,
-				typeof (Sandboxer).Assembly.ManifestModule.FullyQualifiedName,
-				typeof (Sandboxer).FullName
-				);
-			var sandboxer = (Sandboxer) handle.Unwrap();
-			return sandboxer;
-		}
-
-		private AppDomain CreateDomain(CompilerResults assembly)
-		{
-			var assemblyPath = Path.GetFullPath(assembly.PathToAssembly);
-			var permSet = new PermissionSet(PermissionState.None);
-			permSet.AddPermission(new SecurityPermission(SecurityPermissionFlag.Execution));
-			var evidence = new Evidence();
-			evidence.AddHostEvidence(new Zone(SecurityZone.Untrusted));
-			var fullTrustAssembly = typeof (Sandboxer).Assembly.Evidence.GetHostEvidence<StrongName>();
-
-			var adSetup = new AppDomainSetup
-			{
-				ApplicationBase = Path.GetDirectoryName(assemblyPath),
-			};
-
-			var domain = AppDomain.CreateDomain(_submission.Id, evidence, adSetup, permSet, fullTrustAssembly);
-			return domain;
-		}
 
 		private CompilerResults CreateAssemby()
 		{
@@ -104,25 +75,40 @@ namespace CsSandboxRunner
 			return assembly;
 		}
 
-		private void RunSandboxer(AppDomain domain, Sandboxer sandboxer, CompilerResults assembly)
+		private void RunSandboxer(CompilerResults assembly)
 		{
-			var stdin = new StringReader(_submission.Input ?? "");
-			Tuple<Exception, LimitedStringWriter, LimitedStringWriter> res = null;
-			var task = new Thread(() => { res = sandboxer.ExecuteUntrustedCode(assembly.CompiledAssembly.EntryPoint, stdin); }, MemoryLimit);
+			var pipe = new NamedPipeServerStream(_submission.Id, PipeDirection.InOut, 1, PipeTransmissionMode.Byte,
+				PipeOptions.None, 2*10*1024*1024 + 1024, 0);
 
-			var maxMemory = domain.MonitoringSurvivedMemorySize + MemoryLimit;
-			var finishTime = DateTime.Now.Add(IdleTimeLimit);
+			Process sandboxer = null;
+			new Thread(
+				() =>
+					sandboxer =
+						Process.Start("CsSandboxer", String.Format("{0} {1}", Path.GetFullPath(assembly.PathToAssembly), _submission.Id)))
+				.Start();
 
-			task.Start();
+			pipe.WaitForConnection();
+			var stream = new StringStream(pipe);
+			stream.Write(_submission.Input ?? "");
 
-			while (task.IsAlive
-				&& !IsTimeLimitExpected(domain, finishTime)
-				&& !IsMemoryLimitExpected(domain, maxMemory))
+			while (stream.Read() != "Ready")
 			{
-				Thread.Sleep(100);
 			}
 
-			task.Abort(); // TODO: It don't work!!!
+			var startUsedMemory = sandboxer.WorkingSet64;
+			var startUsedTime = sandboxer.TotalProcessorTime;
+			var startTime = DateTime.Now;
+
+			stream.Write("Run");
+
+			while (!sandboxer.HasExited
+			       && !IsTimeLimitExpected(sandboxer, startTime, startUsedTime)
+			       && !IsMemoryLimitExpected(sandboxer, startUsedMemory))
+			{
+			}
+
+			if (!sandboxer.HasExited)
+				sandboxer.Kill();
 
 			if (_hasTimeLimit)
 			{
@@ -136,26 +122,34 @@ namespace CsSandboxRunner
 				return;
 			}
 
-			if (res.Item1 != null)
+			var res = stream.Read();
+			stream.Dispose();
+			var jsonSettings = new JsonSerializerSettings
 			{
-				_result.HandleException(res.Item1);
-				return;
-			}
+				TypeNameHandling = TypeNameHandling.All
+			};
+			var obj = JsonConvert.DeserializeObject(res, jsonSettings);
 
-			_result.HandleOutput(res.Item2, res.Item3);
+			if (obj is Exception)
+				_result.HandleException(obj as Exception);
+			else
+			{
+				var tuple = obj as Tuple<string, string>;
+				_result.HandleOutput(tuple.Item1, tuple.Item2);
+			}
 		}
 
-		private bool IsMemoryLimitExpected(AppDomain domain, long maxMemory)
+		private bool IsMemoryLimitExpected(Process sandboxer, long startUsedMemory)
 		{
 			return _hasMemoryLimit = _hasMemoryLimit
-			                         || maxMemory < domain.MonitoringSurvivedMemorySize;
+			                         || startUsedMemory + MemoryLimit < sandboxer.WorkingSet64;
 		}
 
-		private bool IsTimeLimitExpected(AppDomain domain, DateTime finishTime)
+		private bool IsTimeLimitExpected(Process sandboxer, DateTime startTime, TimeSpan startUsedTime)
 		{
 			return _hasTimeLimit = _hasTimeLimit
-			                       || TimeLimit.CompareTo(domain.MonitoringTotalProcessorTime) < 0
-			                       || finishTime.CompareTo(DateTime.Now) < 0;
+			                       || TimeLimit.Add(startUsedTime).CompareTo(sandboxer.TotalProcessorTime) < 0
+			                       || startTime.Add(IdleTimeLimit).CompareTo(DateTime.Now) < 0;
 		}
 	}
 }
