@@ -121,16 +121,16 @@ namespace CsSandboxRunner
 		}
 
 		[TestCase(
-			@"using System; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; Console.WriteLine(a); }}",
+			@"using System; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; }}",
 			TestName = "Local array")]
 		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(65 * 1024 * 1024); static void Main() { Console.WriteLine(mem); }}",
-			TestName = "List field")] // throw TypeInitializationException
+			@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(65 * 1024 * 1024); static void Main() { }}",
+			TestName = "List field")]
 		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(65 * 1024 * 1024); Console.WriteLine(mem); }}",
+			@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(65 * 1024 * 1024); }}",
 			TestName = "Local List")]
 		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(65 * 1024 * 1024); Console.WriteLine(mem); while(true){} }}",
+			@"using System; using System.Collections.Generic; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; while(true){} }}",
 			TestName = "TL after ML")]
 		public static void TestMemoryLimitError(string code)
 		{
@@ -139,19 +139,19 @@ namespace CsSandboxRunner
 		}
 
 		[TestCase(
-			@"using System; class Program { static void Main() { var a = new byte[63 * 1024 * 1024]; Console.WriteLine(a); }}",
+			@"using System; class Program { static void Main() { var a = new byte[63 * 1024 * 1024]; }}",
 			TestName = "Local array")]
 		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(63 * 1024 * 1024); static void Main() { Console.WriteLine(mem); }}",
+			@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(63 * 1024 * 1024); static void Main() { }}",
 			TestName = "List field")]
 		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(63 * 1024 * 1024); Console.WriteLine(mem); }}",
+			@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(63 * 1024 * 1024); }}",
 			TestName = "Local List")]
 		public static void TestMemoryLimit(string code)
 		{
 			var details = GetDetails(code, "");
 			Assert.AreEqual(Verdict.Ok, details.Verdict);
-			Assert.IsNotNullOrEmpty(details.Output);
+			Assert.IsEmpty(details.Output);
 		}
 
 		[Test]

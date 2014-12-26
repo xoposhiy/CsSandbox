@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.IO.Pipes;
-using System.Runtime.Serialization;
 using System.Threading;
 using CsSandboxApi;
 using CsSandboxRunnerApi;
@@ -21,7 +20,8 @@ namespace CsSandboxRunner
 		private static readonly TimeSpan TimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
 		private static readonly TimeSpan IdleTimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
 
-		private const int MemoryLimit = 64*1024*1024;
+		private const int MemoryLimit = 128*1024*1024;
+		private const int OutputLimit = 10*1024*1024;
 
 		private bool _hasTimeLimit;
 		private bool _hasMemoryLimit;
@@ -78,7 +78,7 @@ namespace CsSandboxRunner
 		private void RunSandboxer(CompilerResults assembly)
 		{
 			var pipe = new NamedPipeServerStream(_submission.Id, PipeDirection.InOut, 1, PipeTransmissionMode.Byte,
-				PipeOptions.None, 2*10*1024*1024 + 1024, 0);
+				PipeOptions.None, 2 * OutputLimit + 1024, 0);
 
 			Process sandboxer = null;
 			new Thread(
@@ -95,7 +95,7 @@ namespace CsSandboxRunner
 			{
 			}
 
-			var startUsedMemory = sandboxer.WorkingSet64;
+			var startUsedMemory = sandboxer.PeakWorkingSet64;
 			var startUsedTime = sandboxer.TotalProcessorTime;
 			var startTime = DateTime.Now;
 
@@ -141,8 +141,9 @@ namespace CsSandboxRunner
 
 		private bool IsMemoryLimitExpected(Process sandboxer, long startUsedMemory)
 		{
+			sandboxer.Refresh();
 			return _hasMemoryLimit = _hasMemoryLimit
-			                         || startUsedMemory + MemoryLimit < sandboxer.WorkingSet64;
+			                         || startUsedMemory + MemoryLimit < sandboxer.PeakWorkingSet64;
 		}
 
 		private bool IsTimeLimitExpected(Process sandboxer, DateTime startTime, TimeSpan startUsedTime)
