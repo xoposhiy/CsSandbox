@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using CsSandbox.Models;
 using CsSandboxApi;
@@ -11,7 +12,19 @@ namespace CsSandbox.DataContext
 		abstract protected SubmissionDetails Find(string id);
 		abstract protected void Save(SubmissionDetails submission);
 		abstract public IEnumerable<SubmissionDetails> GetAllSubmissions(string userId, int max, int skip);
-		abstract public SubmissionDetails FindUnhandled();
+
+		private static readonly ConcurrentQueue<string> Unhandled = new ConcurrentQueue<string>();
+
+		public SubmissionDetails FindUnhandled()
+		{
+			string id;
+			if (!Unhandled.TryDequeue(out id))
+				return null;
+			var submission = Find(id);
+			submission.Status = SubmissionStatus.Running;
+			Save(submission);
+			return submission;
+		}
 
 		public SubmissionDetails AddSubmission(string userId, SubmissionModel submission)
 		{
@@ -27,6 +40,7 @@ namespace CsSandbox.DataContext
 				NeedRun = submission.NeedRun,
 			};
 			Save(submissionDetail);
+			Unhandled.Enqueue(submissionDetail.Id);
 
 			return submissionDetail;
 		}

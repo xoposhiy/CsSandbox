@@ -2,7 +2,6 @@
 using System.Data.Entity.Migrations;
 using System.Linq;
 using CsSandbox.Models;
-using CsSandboxApi;
 
 namespace CsSandbox.DataContext
 {
@@ -37,16 +36,6 @@ namespace CsSandbox.DataContext
 				.OrderByDescending(details => details.Timestamp)
 				.Skip(skip)
 				.Take(max);
-		}
-
-		public override SubmissionDetails FindUnhandled()
-		{
-			var submission = db.Submission.FirstOrDefault(details => details.Status == SubmissionStatus.Waiting);
-			if (submission == null)
-				return null;
-			submission.Status = SubmissionStatus.Running;
-			Save(submission);
-			return submission;
 		}
 	}
 }

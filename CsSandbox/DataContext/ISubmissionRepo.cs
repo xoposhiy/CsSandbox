@@ -11,5 +11,6 @@ namespace CsSandbox.DataContext
 		SubmissionDetails FindDetails(string id);
 		IEnumerable<SubmissionDetails> GetAllSubmissions(string userId, int max, int skip);
 		void SaveResults(string id, RunningResults result);
+		SubmissionDetails FindUnhandled();
 	}
 }
