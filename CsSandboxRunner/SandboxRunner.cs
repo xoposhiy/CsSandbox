@@ -142,8 +142,18 @@ namespace CsSandboxRunner
 		private bool IsMemoryLimitExpected(Process sandboxer, long startUsedMemory)
 		{
 			sandboxer.Refresh();
+			long mem;
+			try
+			{
+				mem = sandboxer.PeakWorkingSet64;
+			}
+			catch
+			{
+				return _hasMemoryLimit;
+			}
+
 			return _hasMemoryLimit = _hasMemoryLimit
-			                         || startUsedMemory + MemoryLimit < sandboxer.PeakWorkingSet64;
+			                         || startUsedMemory + MemoryLimit < mem;
 		}
 
 		private bool IsTimeLimitExpected(Process sandboxer, DateTime startTime, TimeSpan startUsedTime)
