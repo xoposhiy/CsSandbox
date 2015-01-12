@@ -1,18 +1,22 @@
 ﻿using System;
 using System.Globalization;
 using System.IO;
-using System.IO.Pipes;
 using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
 using System.Threading;
-using CsSandboxRunner;
+using Newtonsoft.Json;
 
 namespace CsSandboxer
 {
 	static class Program
 	{
+		private static readonly JsonSerializerSettings Settings = new JsonSerializerSettings
+		{
+			TypeNameHandling = TypeNameHandling.All
+		};
+
 		static void Main(string[] args)
 		{
 			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
@@ -20,41 +24,27 @@ namespace CsSandboxer
 			var assemblyPath = args[0];
 			var id = args[1];
 
-			var pipe = new NamedPipeClientStream(id);
-			pipe.Connect();
-
-			var stream = new StringStream(pipe);
-
 			var assembly = Assembly.LoadFile(assemblyPath);
 			var domain = CreateDomain(id, assemblyPath);
 			var sandboxer = CreateSandboxer(domain);
 
-			var stdin = new StringReader(stream.Read());
-			var stdout = new LimitedStringWriter();
-			var stderr = new LimitedStringWriter();
-
 			GC.Collect();
 
-			stream.Write("Ready");
-			while (stream.Read() != "Run")
+			Console.Out.WriteLine("Ready");
+			while (Console.In.ReadLine() != "Run")
 			{
 			}
-
-			var wasException = false;
 
 			try
 			{
-				sandboxer.ExecuteUntrustedCode(assembly.EntryPoint, stdin, stdout, stderr);
+				sandboxer.ExecuteUntrustedCode(assembly.EntryPoint);
 			}
 			catch (Exception ex)
 			{
-				stream.Write(ex);
-				wasException = true;
+				Console.Error.WriteLine(JsonConvert.SerializeObject(ex, Settings));
+				Console.Error.Close();
+				Environment.Exit(1);
 			}
-
-			if (wasException) return;
-
-			stream.Write(Tuple.Create(stdout.GetData(), stderr.GetData()));
 		}
 
 		private static AppDomain CreateDomain(string id, string assemblyPath)

@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.Reflection;
-using System.Security;
 using System.Threading;
 using CsSandboxApi;
 using CsSandboxRunnerApi;
@@ -10,36 +8,55 @@ using NUnit.Framework;
 
 namespace CsSandboxRunner
 {
-	[EnableApplicationDomainResourceMonitoring]
 	internal static class Tests
 	{
 		private const int OutputLimit = 10*1024*1024;
 
-		[TestCase(@"namespace Test { public class Program { static public void Main() { return ; } } }", "", "", "",
+		[TestCase(@"namespace Test { public class Program { static public void Main() { return ; } } }", 
+			"", "", "",
 			TestName = "Public class and Main")]
-		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(42);}}", "", "42\r\n", "",
+		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(42);}}", 
+			"", "42\r\n", "",
 			TestName = "Output")]
-		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(4.2);}}", "", "4.2\r\n", "",
+		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(4.2);}}", 
+			"", "4.2\r\n", "",
 			TestName = "Output invariant culture")]
-		[TestCase(@"using System; public class M{static public void Main(){Console.Error.WriteLine(4.2);}}", "", "", "4.2\r\n",
+		[TestCase(@"using System; public class M{static public void Main(){Console.Error.WriteLine(4.2);}}", 
+			"", "", "4.2\r\n",
 			TestName = "Error invariant culture")]
-		[TestCase(
-			@"using System; using System.Globalization; public class M{static public void Main(){var a = 4.2; Console.WriteLine(a.ToString(CultureInfo.InvariantCulture));}}",
-			"", "4.2\r\n", "", TestName = "Set Invariant Culture in ToString")]
-		[TestCase(
-			@"using System; using System.Globalization; class A { private static void Main() { Console.WriteLine(CultureInfo.CurrentCulture.EnglishName); } }",
-			"", "Invariant Language (Invariant Country)\r\n", "", TestName = "Get Globlal CultureInfo")]
+		[TestCase(@"using System; using System.Globalization; public class M{static public void Main(){var a = 4.2; Console.WriteLine(a.ToString(CultureInfo.InvariantCulture));}}",
+			"", "4.2\r\n", "", 
+			TestName = "Set Invariant Culture in ToString")]
+		[TestCase(@"using System; using System.Globalization; class A { private static void Main() { Console.WriteLine(CultureInfo.CurrentCulture.EnglishName); } }",
+			"", "Invariant Language (Invariant Country)\r\n", "", 
+			TestName = "Get Globlal CultureInfo")]
 		[TestCase(@"using System; class M{static void Main(){System.Console.WriteLine(Tuple.Create(1, 2));}}", "",
-			"(1, 2)\r\n", "", TestName = "Tuple")]
+			"(1, 2)\r\n", "", 
+			TestName = "Tuple")]
 		[TestCase(@"using System; public class M{static public void Main(){System.Console.Error.WriteLine(42);}}", "", "",
-			"42\r\n", TestName = "Output error")]
+			"42\r\n", 
+			TestName = "Output error")]
 		[TestCase(@"using System; public class M{static public void Main(){System.Console.WriteLine(Console.ReadLine());}}",
-			"asdfasdf", "asdfasdf\r\n", "", TestName = "Read")]
+			"asdfasdf", "asdfasdf\r\n", "", 
+			TestName = "Read")]
 		[TestCase(@"using System; class M{static void Main(){ try{throw new Exception();}catch{Console.WriteLine('!');}}}", "",
-			"!\r\n", "", TestName = "try/catch")]
-		[TestCase(
-			"using System; using System.Linq; using System.Collections.Generic; class A { static void Main() { var a = new List<String>{\"Str2\"}; foreach(var b in a.Select(s => s.ToLower())) Console.WriteLine(b); } }",
-			"", "str2\r\n", "", TestName = "Collections and LINQ")]
+			"!\r\n", "", 
+			TestName = "try/catch")]
+		[TestCase("using System; using System.Linq; using System.Collections.Generic; class A { static void Main() { var a = new List<String>{\"Str2\"}; foreach(var b in a.Select(s => s.ToLower())) Console.WriteLine(b); } }",
+			"", "str2\r\n", "", 
+			TestName = "Collections and LINQ")]
+		[TestCase(@"using System; enum A {a} class B { static void Main() { Console.Write(A.a); } }",
+			"", "a", "",
+			TestName = "Write enum")]
+		[TestCase(@"using System; enum A {a} class B { static void Main() { Console.Write(A.a.ToString()); } }",
+			"", "a", "",
+			TestName = "Write enum ToString")]
+		[TestCase("using System; class A { public override string ToString() { return \"a\"; }} class B { static void Main() { Console.Write(new A()); } }",
+			"", "a", "",
+			TestName = "Write ToString")]
+		[TestCase("using System; class A { public override string ToString() { return \"a\"; }} class B { static void Main() { Console.Write(new A().ToString()); } }",
+			"", "a", "",
+			TestName = "Write ToString directly")]
 		public static void TestOk(string code, string input, string output, string error)
 		{
 			var details = GetDetails(code, input);
@@ -57,17 +74,13 @@ namespace CsSandboxRunner
 			Assert.IsNotNullOrEmpty(details.CompilationOutput);
 		}
 
-		[TestCase(
-			"using System; using System.IO; namespace UntrustedCode { public class UntrustedClass { public static void Main() { Directory.GetFiles(@\"c:\\\"); }}}",
+		[TestCase("using System; using System.IO; namespace UntrustedCode { public class UntrustedClass { public static void Main() { Directory.GetFiles(@\"c:\\\"); }}}",
 			TestName = "Get files list")]
-		[TestCase(
-			"using System; class A { static void Main() { foreach(var assembly in AppDomain.CurrentDomain.GetAssemblies()) Console.WriteLine(assembly.GetName().Name); }}",
+		[TestCase("using System; class A { static void Main() { foreach(var assembly in AppDomain.CurrentDomain.GetAssemblies()) Console.WriteLine(assembly.GetName().Name); }}",
 			TestName = "Loaded assemblies list")]
-		[TestCase(
-			"using System; using System.Threading; using System.Linq; using System.Reflection; using System.Security; [SecurityCritical] class A { static void Main() { var assemblies = Thread.GetDomain().GetAssemblies(); var ass = assemblies.FirstOrDefault(assembly => assembly.ToString().Contains(\"CsSandbox\")); var type = ass.GetType(\"CsSandboxer.Sandboxer\", true, true); if(type == null) Console.WriteLine(\"lol\"); else type.InvokeMember(\"MustDontWork\", BindingFlags.InvokeMethod, null, null, null); }}",
+		[TestCase("using System; using System.Threading; using System.Linq; using System.Reflection; using System.Security; [SecurityCritical] class A { static void Main() { var assemblies = Thread.GetDomain().GetAssemblies(); var ass = assemblies.FirstOrDefault(assembly => assembly.ToString().Contains(\"CsSandbox\")); var type = ass.GetType(\"CsSandboxer.Sandboxer\", true, true); if(type == null) Console.WriteLine(\"lol\"); else type.InvokeMember(\"MustDontWork\", BindingFlags.InvokeMethod, null, null, null); }}",
 			TestName = "Method in sandboxer")]
-		[TestCase(
-			"using System; using System.Threading; using System.Linq; using System.Reflection; using System.Security; [SecurityCritical] class A { static void Main() { var assemblies = Thread.GetDomain().GetAssemblies(); var ass = assemblies.FirstOrDefault(assembly => assembly.ToString().Contains(\"CsSandbox\")); var type = ass.GetType(\"CsSandboxer.Sandboxer\", true, true); if(type == null) Console.WriteLine(\"lol\"); else type.InvokeMember(\"Secret\", BindingFlags.GetField, null, null, null);; }}",
+		[TestCase("using System; using System.Threading; using System.Linq; using System.Reflection; using System.Security; [SecurityCritical] class A { static void Main() { var assemblies = Thread.GetDomain().GetAssemblies(); var ass = assemblies.FirstOrDefault(assembly => assembly.ToString().Contains(\"CsSandbox\")); var type = ass.GetType(\"CsSandboxer.Sandboxer\", true, true); if(type == null) Console.WriteLine(\"lol\"); else type.InvokeMember(\"Secret\", BindingFlags.GetField, null, null, null);; }}",
 			TestName = "Field in sandboxer")]
 		public static void TestSecurityException(string code)
 		{
@@ -76,9 +89,10 @@ namespace CsSandboxRunner
 			Assert.IsNullOrEmpty(details.Error);
 		}
 
-		[TestCase(
-			"using System; namespace Test { public class Program { static public void Main() { throw new Exception(); }}}",
+		[TestCase("using System; namespace Test { public class Program { static public void Main() { throw new Exception(); }}}",
 			TestName = "throw")]
+		[TestCase("using System; namespace Test { public class Program { static public void Main() { Console.Error.Write('a'); throw new Exception(); }}}",
+			TestName = "write stderr + throw")]
 		public static void TestRuntimeError(string code)
 		{
 			var details = GetDetails(code, "");
@@ -86,14 +100,11 @@ namespace CsSandboxRunner
 			Assert.IsNotNullOrEmpty(details.Error);
 		}
 
-		[TestCase(
-			"using System; class Program { static void Main() { var s = new string('*', $limit + 1); Console.Write(s); }}",
+		[TestCase("using System; class Program { static void Main() { var s = new string('*', $limit + 1); Console.Write(s); }}",
 			TestName = "Output")]
-		[TestCase(
-			"using System; class Program { static void Main() { var s = new string('*', $limit); Console.WriteLine(s); }}",
+		[TestCase("using System; class Program { static void Main() { var s = new string('*', $limit); Console.WriteLine(s); }}",
 			TestName = "Output + newline")]
-		[TestCase(
-			"using System; class Program { static void Main() { var s = new string('*', $limit); Console.Write(s); Console.WriteLine(); }}",
+		[TestCase("using System; class Program { static void Main() { var s = new string('*', $limit); Console.Write(s); Console.WriteLine(); }}",
 			TestName = "Output + newline explicit")]
 		public static void TestOutputLimitError(string code)
 		{
@@ -112,7 +123,7 @@ namespace CsSandboxRunner
 
 		[TestCase(@"using System; class Program { static void Main() { int a = 0; while(true) { ++a; } }}",
 			TestName = "Infinty loop")]
-		[TestCase(@"using System.Threading; class Program{ private static void Main() { Thread.Sleep(3000); }}",
+		[TestCase(@"using System.Threading; class Program{ private static void Main() { Thread.Sleep(15000); }}",
 			TestName = "Thread.Sleep")]
 		public static void TestTimeLimitError(string code)
 		{
@@ -120,17 +131,13 @@ namespace CsSandboxRunner
 			Assert.AreEqual(Verdict.TimeLimit, details.Verdict);
 		}
 
-		[TestCase(
-			@"using System; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; }}",
+		[TestCase(@"using System; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; }}",
 			TestName = "Local array")]
-		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(65 * 1024 * 1024); static void Main() { }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(65 * 1024 * 1024); static void Main() { }}",
 			TestName = "List field")]
-		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(65 * 1024 * 1024); }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(65 * 1024 * 1024); }}",
 			TestName = "Local List")]
-		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; while(true){} }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; while(true){} }}",
 			TestName = "TL after ML")]
 		public static void TestMemoryLimitError(string code)
 		{
@@ -138,14 +145,11 @@ namespace CsSandboxRunner
 			Assert.AreEqual(Verdict.MemoryLimit, details.Verdict);
 		}
 
-		[TestCase(
-			@"using System; class Program { static void Main() { var a = new byte[63 * 1024 * 1024]; }}",
+		[TestCase(@"using System; class Program { static void Main() { var a = new byte[63 * 1024 * 1024]; }}",
 			TestName = "Local array")]
-		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(63 * 1024 * 1024); static void Main() { }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(63 * 1024 * 1024); static void Main() { }}",
 			TestName = "List field")]
-		[TestCase(
-			@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(63 * 1024 * 1024); }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(63 * 1024 * 1024); }}",
 			TestName = "Local List")]
 		public static void TestMemoryLimit(string code)
 		{
@@ -185,23 +189,6 @@ namespace CsSandboxRunner
 			var result = new SandboxRunner(model).Run();
 			Assert.IsNotNull(result);
 			return result;
-		}
-	}
-
-	internal class EnableApplicationDomainResourceMonitoring : Attribute, ITestAction
-	{
-		public void BeforeTest(TestDetails testDetails)
-		{
-			AppDomain.MonitoringIsEnabled = true;
-		}
-
-		public void AfterTest(TestDetails testDetails)
-		{
-		}
-
-		public ActionTargets Targets
-		{
-			get { return ActionTargets.Test; }
 		}
 	}
 }

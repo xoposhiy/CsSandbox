@@ -58,7 +58,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="RunningResultsExtention.cs" />
     <Compile Include="SandboxRunner.cs" />
-    <Compile Include="StringStream.cs" />
     <Compile Include="Tests.cs" />
   </ItemGroup>
   <ItemGroup>

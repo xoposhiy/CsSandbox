@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
+using CsSandboxApi;
 using CsSandboxRunnerApi;
 
 namespace CsSandboxRunner
@@ -45,7 +45,6 @@ namespace CsSandboxRunner
 			var client = new Client(address, token);
 			while (true)
 			{
-				threads = threads.Where(thread => thread.IsAlive).ToList();
 				if (Unhandled.Count < threadsCount / 2)
 				{
 					var unhandled = client.TryGetSubmissions(threadsCount).Result;
@@ -62,12 +61,6 @@ namespace CsSandboxRunner
 						results.Add(result);
 					client.SendResults(results);
 				}
-				if (threads.Count < threadsCount)
-				{
-					var thread = new Thread(Handle);
-					thread.Start();
-					threads.Add(thread);
-				}
 			}
 		}
 
@@ -79,7 +72,19 @@ namespace CsSandboxRunner
 				InternalSubmissionModel submission;
 				while (!Unhandled.TryDequeue(out submission))
 					spinWait.SpinOnce();
-				var result = new SandboxRunner(submission).Run();
+				RunningResults result;
+				try
+				{
+					result = new SandboxRunner(submission).Run();
+				}
+				catch
+				{
+					result = new RunningResults
+					{
+						Id = submission.Id,
+						Verdict = Verdict.SandboxError
+					};
+				}
 				Results.Enqueue(result);
 			}
 		}

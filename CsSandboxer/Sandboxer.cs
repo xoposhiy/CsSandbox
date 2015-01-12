@@ -1,5 +1,4 @@
 ﻿using System;
-using System.IO;
 using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
@@ -10,13 +9,10 @@ namespace CsSandboxer
 	public class Sandboxer : MarshalByRefObject
 	{
 
-		public void ExecuteUntrustedCode(MethodInfo entryPoint, TextReader stdin, TextWriter stdout, TextWriter stderr)
+		public void ExecuteUntrustedCode(MethodInfo entryPoint)
 		{
 			(new PermissionSet(PermissionState.Unrestricted)).Assert();
 
-			Console.SetIn(stdin);
-			Console.SetOut(stdout);
-			Console.SetError(stderr);
 			entryPoint.Invoke(null, null);
 
 			CodeAccessPermission.RevertAssert();

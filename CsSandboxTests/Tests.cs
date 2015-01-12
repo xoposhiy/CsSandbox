@@ -72,7 +72,7 @@ namespace CsSandboxTests
 				}
 				submissions = tmp;
 				Console.Out.WriteLine("{0}: {1}", DateTime.Now.Subtract(startTime), submissions.Count);
-				Thread.Sleep(1000);
+				Thread.Sleep(100);
 			}
 		}
 
