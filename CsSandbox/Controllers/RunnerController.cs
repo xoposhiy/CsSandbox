@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Net;
 using System.Net.Http;
 using System.Web.Http;
 using CsSandbox.DataContext;
@@ -32,16 +34,45 @@ namespace CsSandbox.Controllers
 			};
 	    }
 
+	    [HttpGet]
+	    [Route("GetSubmissions")]
+	    public List<InternalSubmissionModel> GetSubmissions([FromUri] string token, [FromUri] int count)
+	    {
+			CheckRunner(token);
+		    var submissions = _submissionsRepo.GetUnhandled(count);
+		    return submissions
+			    .Select(details => new InternalSubmissionModel
+			    {
+				    Id = details.Id,
+				    Code = details.Code,
+				    Input = details.Input,
+				    NeedRun = details.NeedRun
+			    })
+			    .ToList();
+	    }
+
 	    [HttpPost]
 		[Route("PostResult")]
-	    public void PostResult([FromUri]string token, [FromUri]string id, RunningResults result)
+	    public void PostResult([FromUri]string token, RunningResults result)
 	    {
 			if (!ModelState.IsValid)
 				throw new HttpResponseException(HttpStatusCode.BadRequest);
 			CheckRunner(token);
 
-			_sandboxHandler.SaveResult(id, result);
+			_sandboxHandler.SaveResult(result);
 	    }
+
+		[HttpPost]
+		[Route("PostResults")]
+		public void PostResults([FromUri]string token, List<RunningResults> results)
+		{
+			if (!ModelState.IsValid)
+				throw new HttpResponseException(HttpStatusCode.BadRequest);
+			CheckRunner(token);
+
+			_sandboxHandler.SaveResults(results);
+		}
+
 
 	    private void CheckRunner(string token)
 	    {

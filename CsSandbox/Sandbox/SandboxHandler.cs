@@ -25,9 +25,14 @@ namespace CsSandbox.Sandbox
 			return id;
 		}
 
-		public void SaveResult(string id, RunningResults result)
+		public void SaveResult(RunningResults result)
 		{
-			_submissions.SaveResults(id, result);
+			_submissions.SaveResults(result);
+		}
+
+		public void SaveResults(List<RunningResults> results)
+		{
+			_submissions.SaveAllResults(results);
 		}
 
 		public SubmissionDetails FindDetails(string id)

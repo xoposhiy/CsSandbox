@@ -14,7 +14,7 @@ namespace CsSandbox.Controllers
 			return View((object)token);
 		}
 
-		public ActionResult SubmissionsList(string token, int max = Int32.MaxValue, int skip = 0)
+		public ActionResult SubmissionsList(string token, int max = 200, int skip = 0)
 		{
 			var submissions = _dataManager
 				.GetAllSubmission(token, max, skip)

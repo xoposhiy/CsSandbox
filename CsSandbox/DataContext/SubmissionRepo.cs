@@ -24,9 +24,23 @@ namespace CsSandbox.DataContext
 			return db.Submission.Find(id);
 		}
 
+		protected override List<SubmissionDetails> FindAll(List<string> submissions)
+		{
+			return db.Submission.Where(details => submissions.Contains(details.Id)).ToList();
+		}
+
 		protected override void Save(SubmissionDetails submission)
 		{
 			db.Submission.AddOrUpdate(submission);
+			db.SaveChanges();
+		}
+
+		protected override void SaveAll(IEnumerable<SubmissionDetails> result)
+		{
+			foreach (var details in result)
+			{
+				db.Submission.AddOrUpdate(details);
+			}
 			db.SaveChanges();
 		}
 

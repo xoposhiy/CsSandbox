@@ -1,9 +1,12 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Globalization;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web;
 using CsSandboxRunnerApi;
+using NUnit.Framework;
 
 namespace CsSandboxRunner
 {
@@ -25,16 +28,27 @@ namespace CsSandboxRunner
 		{
 			var uri = GetUri("/TryGetSubmission");
 			var response = await _httpClient.GetAsync(uri);
-			if (response.IsSuccessStatusCode) return await response.Content.ReadAsAsync<InternalSubmissionModel>();
+			if (response.IsSuccessStatusCode) 
+				return await response.Content.ReadAsAsync<InternalSubmissionModel>();
 
 			Console.Out.WriteLine(DateTime.Now.ToString("HH:mm:ss"));
 			Console.Out.WriteLine(response.ToString());
 			return null;
 		}
 
-		public async void SendResult(string id, RunningResults result)
+		public async Task<List<InternalSubmissionModel>> TryGetSubmissions(int threadsCount)
 		{
-			var uri = GetUri("/PostResult", new[] {"id", id});
+			var uri = GetUri("/GetSubmissions", new[] {"count", threadsCount.ToString(CultureInfo.InvariantCulture)});
+			var response = await _httpClient.GetAsync(uri);
+			if (response.IsSuccessStatusCode) 
+				return await response.Content.ReadAsAsync<List<InternalSubmissionModel>>();
+
+			return new List<InternalSubmissionModel>();
+		}
+
+		public async void SendResult(RunningResults result)
+		{
+			var uri = GetUri("/PostResult");
 			var responce = await _httpClient.PostAsJsonAsync(uri, result);
 
 			if (responce.IsSuccessStatusCode) return;
@@ -42,6 +56,21 @@ namespace CsSandboxRunner
 			Console.Out.WriteLine(DateTime.Now.ToString("HH:mm:ss"));
 			Console.Out.WriteLine(responce.ToString());
 			Console.Out.WriteLine(result);
+		}
+
+		public async void SendResults(List<RunningResults> results)
+		{
+			var uri = GetUri("/PostResults");
+			var responce = await _httpClient.PostAsJsonAsync(uri, results);
+
+			if (responce.IsSuccessStatusCode) return;
+
+			Console.Out.WriteLine(DateTime.Now.ToString("HH:mm:ss"));
+			Console.Out.WriteLine(responce.ToString());
+			foreach (var result in results)
+			{
+				Console.Out.WriteLine(result);
+			}
 		}
 
 		private string GetUri(string path, params string[][] parameters)

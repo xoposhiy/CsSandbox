@@ -39,6 +39,7 @@ namespace CsSandboxRunner
 		public SandboxRunner(InternalSubmissionModel submission)
 		{
 			_submission = submission;
+			_result.Id = submission.Id;
 		}
 
 		public RunningResults Run()
@@ -95,6 +96,13 @@ namespace CsSandboxRunner
 			{
 			}
 
+//			if (sandboxer == null)
+//			{
+//				_result.Verdict = Verdict.SandboxError;
+//				return;
+//			}
+
+			sandboxer.Refresh();
 			var startUsedMemory = sandboxer.PeakWorkingSet64;
 			var startUsedTime = sandboxer.TotalProcessorTime;
 			var startTime = DateTime.Now;
@@ -119,6 +127,12 @@ namespace CsSandboxRunner
 			if (_hasMemoryLimit)
 			{
 				_result.Verdict = Verdict.MemoryLimit;
+				return;
+			}
+
+			if (sandboxer.ExitCode != 0)
+			{
+				_result.Verdict = Verdict.SandboxError;
 				return;
 			}
 

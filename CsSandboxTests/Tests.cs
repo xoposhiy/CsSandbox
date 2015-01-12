@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CsSandboxApi;
 using NUnit.Framework;
@@ -54,10 +55,12 @@ namespace CsSandboxTests
 		{
 			var client = new CsSandboxClient("tester", Adress, 0);
 			var submissions = new List<Submission>();
+			var startTime = DateTime.Now;
 			for (var i = 0; i < 100; ++i)
 			{
 				submissions.Add(await client.CreateSubmit("class A { static void Main() { while(true) {} } }", ""));
 			}
+			Console.Out.WriteLine("{0}", DateTime.Now.Subtract(startTime));
 			while (submissions.Any())
 			{
 				var tmp = new List<Submission>();
@@ -68,7 +71,8 @@ namespace CsSandboxTests
 						tmp.Add(submission);
 				}
 				submissions = tmp;
-				Console.Out.WriteLine("{0}", submissions.Count);
+				Console.Out.WriteLine("{0}: {1}", DateTime.Now.Subtract(startTime), submissions.Count);
+				Thread.Sleep(1000);
 			}
 		}
 
