@@ -10,40 +10,40 @@ namespace CsSandboxRunner
 {
 	internal static class Tests
 	{
-		private const int OutputLimit = 10*1024*1024;
+		private const int OutputLimit = 10 * 1024 * 1024;
 
-		[TestCase(@"namespace Test { public class Program { static public void Main() { return ; } } }", 
+		[TestCase(@"namespace Test { public class Program { static public void Main() { return ; } } }",
 			"", "", "",
 			TestName = "Public class and Main")]
-		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(42);}}", 
+		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(42);}}",
 			"", "42\r\n", "",
 			TestName = "Output")]
-		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(4.2);}}", 
+		[TestCase(@"using System; public class M{static public void Main(){Console.WriteLine(4.2);}}",
 			"", "4.2\r\n", "",
 			TestName = "Output invariant culture")]
-		[TestCase(@"using System; public class M{static public void Main(){Console.Error.WriteLine(4.2);}}", 
+		[TestCase(@"using System; public class M{static public void Main(){Console.Error.WriteLine(4.2);}}",
 			"", "", "4.2\r\n",
 			TestName = "Error invariant culture")]
 		[TestCase(@"using System; using System.Globalization; public class M{static public void Main(){var a = 4.2; Console.WriteLine(a.ToString(CultureInfo.InvariantCulture));}}",
-			"", "4.2\r\n", "", 
+			"", "4.2\r\n", "",
 			TestName = "Set Invariant Culture in ToString")]
 		[TestCase(@"using System; using System.Globalization; class A { private static void Main() { Console.WriteLine(CultureInfo.CurrentCulture.EnglishName); } }",
-			"", "Invariant Language (Invariant Country)\r\n", "", 
+			"", "Invariant Language (Invariant Country)\r\n", "",
 			TestName = "Get Globlal CultureInfo")]
 		[TestCase(@"using System; class M{static void Main(){System.Console.WriteLine(Tuple.Create(1, 2));}}", "",
-			"(1, 2)\r\n", "", 
+			"(1, 2)\r\n", "",
 			TestName = "Tuple")]
 		[TestCase(@"using System; public class M{static public void Main(){System.Console.Error.WriteLine(42);}}", "", "",
-			"42\r\n", 
+			"42\r\n",
 			TestName = "Output error")]
 		[TestCase(@"using System; public class M{static public void Main(){System.Console.WriteLine(Console.ReadLine());}}",
-			"asdfasdf", "asdfasdf\r\n", "", 
+			"asdfasdf", "asdfasdf\r\n", "",
 			TestName = "Read")]
 		[TestCase(@"using System; class M{static void Main(){ try{throw new Exception();}catch{Console.WriteLine('!');}}}", "",
-			"!\r\n", "", 
+			"!\r\n", "",
 			TestName = "try/catch")]
 		[TestCase("using System; using System.Linq; using System.Collections.Generic; class A { static void Main() { var a = new List<String>{\"Str2\"}; foreach(var b in a.Select(s => s.ToLower())) Console.WriteLine(b); } }",
-			"", "str2\r\n", "", 
+			"", "str2\r\n", "",
 			TestName = "Collections and LINQ")]
 		[TestCase(@"using System; enum A {a} class B { static void Main() { Console.Write(A.a); } }",
 			"", "a", "",
@@ -125,13 +125,23 @@ namespace CsSandboxRunner
 			TestName = "Infinty loop")]
 		[TestCase(@"using System.Threading; class Program{ private static void Main() { Thread.Sleep(15000); }}",
 			TestName = "Thread.Sleep")]
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { const int memory = 63 * 1024 * 1024; var a = new byte[memory]; for (var i = 0; i < 1000*1000*1000; ++i){ a[i % memory] = (byte)i; } }}",
+			TestName = "many assignation")]
 		public static void TestTimeLimitError(string code)
 		{
 			var details = GetDetails(code, "");
 			Assert.AreEqual(Verdict.TimeLimit, details.Verdict);
 		}
 
-		[TestCase(@"using System; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { const int memory = 63 * 1024 * 1024; var a = new byte[memory]; for (var i = 0; i < 100*1000*1000; ++i){ a[i % memory] = (byte)i; } }}",
+			TestName = "many assignation")]
+		public static void TestTimeLimit(string code)
+		{
+			var details = GetDetails(code, "");
+			Assert.AreEqual(Verdict.Ok, details.Verdict);
+		}
+
+		[TestCase(@"using System; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; for (var i = 0; i < a.Length; ++i) { a[i] = (byte)i; } }}",
 			TestName = "Local array")]
 		[TestCase(@"using System; using System.Collections.Generic; class Program { const int memory = 65 * 1024 * 1024; static List<byte> a = new List<byte>(memory); static void Main() { for (var i = 0; i < memory; ++i) { a.Add((byte)i); } }}",
 			TestName = "List field")]
