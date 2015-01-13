@@ -141,49 +141,21 @@ namespace CsSandboxRunner
 			}
 
 			sandboxer.WaitForExit();
-			if (sandboxer.ExitCode != 0) // TODO: correct RE
+			if (sandboxer.ExitCode != 0)
 			{
 				stderrReader.Wait();
-				var jsonSettings = new JsonSerializerSettings
-				{
-					TypeNameHandling = TypeNameHandling.All
-				};
-				object obj;
-				try
-				{
-					obj = JsonConvert.DeserializeObject(new string(stderr, 0, stderrReader.Result), jsonSettings);
-				}
-				catch
-				{
-					_result.Verdict = Verdict.SandboxError;
-					return;
-				}
-				if (obj is Exception)
-					_result.HandleException(obj as Exception);
+				var error = new string(stderr, 0, stderrReader.Result);
+
+				var obj = FindSerializedException(error);
+
+				if (obj != null)
+					_result.HandleException(obj);
 				else
 					_result.Verdict = Verdict.SandboxError;
+
 				return;
 			}
 
-
-//			var jsonSettings = new JsonSerializerSettings
-//			{
-//				TypeNameHandling = TypeNameHandling.All
-//			};
-
-//			object obj;
-//			try
-//			{
-//				obj = JsonConvert.DeserializeObject(stdout.Result, jsonSettings);
-//			}
-//			catch
-//			{
-//				_result.Verdict = Verdict.SandboxError;
-//				return;
-//			}
-//
-//			if (obj is Exception)
-//				_result.HandleException(obj as Exception);
 
 			stdoutReader.Wait();
 			stderrReader.Wait();
@@ -219,6 +191,33 @@ namespace CsSandboxRunner
 			return _hasTimeLimit = _hasTimeLimit
 			                       || TimeLimit.Add(startUsedTime).CompareTo(sandboxer.TotalProcessorTime) < 0
 			                       || startTime.Add(IdleTimeLimit).CompareTo(DateTime.Now) < 0;
+		}
+
+		private static Exception FindSerializedException(string str) // TODO: correct RE search
+		{
+			str = str.TrimEnd();
+			if (!str.EndsWith("}"))
+				return null;
+
+			var jsonSettings = new JsonSerializerSettings
+			{
+				TypeNameHandling = TypeNameHandling.All
+			};
+
+			for (var pos = str.LastIndexOf('{'); pos >= 0; pos = str.LastIndexOf('{', pos - 1))
+			{
+				try
+				{
+					var obj = JsonConvert.DeserializeObject(str.Substring(pos), jsonSettings);
+					return obj as Exception;
+				}
+				catch
+				{
+				}
+				if (pos == 0) break;
+			}
+
+			return null;
 		}
 	}
 }
