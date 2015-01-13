@@ -19,7 +19,7 @@ namespace CsSandboxRunner
 		private static readonly TimeSpan TimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
 		private static readonly TimeSpan IdleTimeLimit = new TimeSpan(0, 0, 0, 5 * TimeLimitInSeconds);
 
-		private const int MemoryLimit = 128*1024*1024;
+		private const int MemoryLimit = 64*1024*1024;
 		private const int OutputLimit = 10*1024*1024;
 
 		private bool _hasTimeLimit;

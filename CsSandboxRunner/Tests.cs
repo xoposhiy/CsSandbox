@@ -133,11 +133,11 @@ namespace CsSandboxRunner
 
 		[TestCase(@"using System; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; }}",
 			TestName = "Local array")]
-		[TestCase(@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(65 * 1024 * 1024); static void Main() { }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { const int memory = 65 * 1024 * 1024; static List<byte> a = new List<byte>(memory); static void Main() { for (var i = 0; i < memory; ++i) { a.Add((byte)i); } }}",
 			TestName = "List field")]
-		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(65 * 1024 * 1024); }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { const int memory = 65 * 1024 * 1024; var a = new List<byte>(memory); for (var i = 0; i < memory; ++i) { a.Add((byte)i); } }}",
 			TestName = "Local List")]
-		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { var a = new byte[65 * 1024 * 1024]; while(true){} }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { const int memory = 65 * 1024 * 1024; var a = new byte[memory]; var i = 0; while(true){ a[i] = (byte)i; i = (i + 1) % memory; } }}",
 			TestName = "TL after ML")]
 		public static void TestMemoryLimitError(string code)
 		{
@@ -145,11 +145,11 @@ namespace CsSandboxRunner
 			Assert.AreEqual(Verdict.MemoryLimit, details.Verdict);
 		}
 
-		[TestCase(@"using System; class Program { static void Main() { var a = new byte[63 * 1024 * 1024]; }}",
+		[TestCase(@"using System; class Program { static void Main() { var a = new byte[63 * 1024 * 1024]; for (var i = 0; i < a.Length; ++i) { a[i] = (byte)i; } }}",
 			TestName = "Local array")]
-		[TestCase(@"using System; using System.Collections.Generic; class Program { static List<byte> mem = new List<byte>(63 * 1024 * 1024); static void Main() { }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { const int memory = 63 * 1024 * 1024; static List<byte> a = new List<byte>(memory); static void Main() { for (var i = 0; i < memory; ++i) { a.Add((byte)i); } }}",
 			TestName = "List field")]
-		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { var mem = new List<byte>(63 * 1024 * 1024); }}",
+		[TestCase(@"using System; using System.Collections.Generic; class Program { static void Main() { const int memory = 63 * 1024 * 1024; var a = new List<byte>(memory); for (var i = 0; i < memory; ++i) { a.Add((byte)i); } }}",
 			TestName = "Local List")]
 		public static void TestMemoryLimit(string code)
 		{
