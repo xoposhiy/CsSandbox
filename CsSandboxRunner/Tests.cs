@@ -57,6 +57,15 @@ namespace CsSandboxRunner
 		[TestCase("using System; class A { public override string ToString() { return \"a\"; }} class B { static void Main() { Console.Write(new A().ToString()); } }",
 			"", "a", "",
 			TestName = "Write ToString directly")]
+		[TestCase("using System; enum A {a} class B { static void Main() { Console.Write(new string(new[] {(char) 9608, (char) 8212})); } }",
+			"", "█—", "",
+			TestName = "output stdout Unicode")]
+		[TestCase("using System; enum A {a} class B { static void Main() { Console.Error.Write(new string(new[] {(char) 9608, (char) 8212})); } }",
+			"", "", "█—", 
+			TestName = "output stderr Unicode")]
+		[TestCase("using System; enum A {a} class B { static void Main() { var input = Console.ReadLine(); foreach (var ch in input){ Console.Out.WriteLine((int)ch); }} }",
+			"█—", "9608\r\n8212\r\n", "",
+			TestName = "read Unicode")]
 		public static void TestOk(string code, string input, string output, string error)
 		{
 			var details = GetDetails(code, input);

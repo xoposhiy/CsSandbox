@@ -3,6 +3,7 @@ using System.CodeDom.Compiler;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Text;
 using System.Threading.Tasks;
 using CsSandboxApi;
 using CsSandboxRunnerApi;
@@ -78,6 +79,9 @@ namespace CsSandboxRunner
 
 		private void RunSandboxer(CompilerResults assembly)
 		{
+			var inputBytes = Encoding.UTF8.GetBytes(_submission.Input);
+			var input = Encoding.Default.GetString(inputBytes);
+
 			var startInfo = new ProcessStartInfo("CsSandboxer", String.Format("\"{0}\" {1}", Path.GetFullPath(assembly.PathToAssembly), _submission.Id))
 			{
 				RedirectStandardInput = true,
@@ -85,6 +89,8 @@ namespace CsSandboxRunner
 				RedirectStandardError = true,
 				UseShellExecute = false,
 				CreateNoWindow = true,
+				StandardOutputEncoding = Encoding.UTF8,
+				StandardErrorEncoding = Encoding.UTF8
 			};
 			var sandboxer = Process.Start(startInfo);
 
@@ -104,7 +110,7 @@ namespace CsSandboxRunner
 			var startTime = DateTime.Now;
 
 			sandboxer.StandardInput.WriteLine("Run");
-			sandboxer.StandardInput.WriteLineAsync(_submission.Input);
+			sandboxer.StandardInput.WriteLineAsync(input);
 
 			var stdout = new char[OutputLimit + 1];
 			var stdoutReader = sandboxer.StandardOutput.ReadBlockAsync(stdout, 0, OutputLimit + 1);

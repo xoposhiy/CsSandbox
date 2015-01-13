@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
+using System.Text;
 using System.Threading;
 using Newtonsoft.Json;
 
@@ -20,6 +21,8 @@ namespace CsSandboxer
 		static void Main(string[] args)
 		{
 			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
+			Console.InputEncoding = Encoding.UTF8;
+			Console.OutputEncoding = Encoding.UTF8;
 
 			var assemblyPath = args[0];
 			var id = args[1];
