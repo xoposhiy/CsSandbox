@@ -15,6 +15,9 @@ namespace CsSandboxApi
 		[StringLength(10 * 1024 * 1024, ErrorMessage = "Input length is too large")]
 		public string Input { get; set; }
 
+		[StringLength(1024, ErrorMessage = "Info length is too large")]
+		public string HumanName { get; set; }
+
 		public bool NeedRun { get; set; }
 	}
 }

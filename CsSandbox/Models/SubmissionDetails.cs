@@ -40,6 +40,9 @@ namespace CsSandbox.Models
 		[StringLength(10 * 1024 * 1024)]
 		public string Error { get; set; }
 
+		[StringLength(1024)]
+		public string HumanName { get; set; }
+
 		public bool NeedRun { get; set; }
 	}
 }

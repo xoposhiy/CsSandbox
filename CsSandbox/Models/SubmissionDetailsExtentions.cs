@@ -16,7 +16,8 @@ namespace CsSandbox.Models
 				details.Verdict,
 				details.CompilationOutput,
 				details.Output,
-				details.Error);
+				details.Error,
+				details.HumanName);
 		}
 	}
 }

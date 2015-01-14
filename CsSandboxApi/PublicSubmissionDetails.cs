@@ -19,7 +19,9 @@ namespace CsSandboxApi
 		public readonly string Output;
 		public readonly string Error;
 
-		public PublicSubmissionDetails(string id, SubmissionStatus status, string code, string input, DateTime timestamp, bool needRun, Verdict verdict, string compilationInfo, string output, string error)
+		public readonly string HumanName;
+
+		public PublicSubmissionDetails(string id, SubmissionStatus status, string code, string input, DateTime timestamp, bool needRun, Verdict verdict, string compilationInfo, string output, string error, string humanName)
 		{
 			Id = id;
 			Status = status;
@@ -31,6 +33,7 @@ namespace CsSandboxApi
 			CompilationInfo = compilationInfo;
 			Output = output;
 			Error = error;
+			HumanName = humanName;
 		}
 	}
 }

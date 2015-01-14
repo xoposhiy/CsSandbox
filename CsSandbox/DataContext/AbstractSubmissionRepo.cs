@@ -41,6 +41,7 @@ namespace CsSandbox.DataContext
 				Verdict = Verdict.NA,
 				Timestamp = DateTime.Now,
 				NeedRun = submission.NeedRun,
+				HumanName = submission.HumanName
 			};
 			Save(submissionDetail);
 

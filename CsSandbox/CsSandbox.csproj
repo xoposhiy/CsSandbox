@@ -209,6 +209,10 @@
     <Compile Include="Migrations\201412231223286_ExtractWorker.Designer.cs">
       <DependentUpon>201412231223286_ExtractWorker.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201501141418400_HumanNames.cs" />
+    <Compile Include="Migrations\201501141418400_HumanNames.Designer.cs">
+      <DependentUpon>201501141418400_HumanNames.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\Role.cs" />
@@ -317,6 +321,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201412231223286_ExtractWorker.resx">
       <DependentUpon>201412231223286_ExtractWorker.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201501141418400_HumanNames.resx">
+      <DependentUpon>201501141418400_HumanNames.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

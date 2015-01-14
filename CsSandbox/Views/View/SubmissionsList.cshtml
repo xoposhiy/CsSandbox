@@ -20,10 +20,11 @@
 	{
 		ind++;
 		var st = detail.Status == SubmissionStatus.Done ? "success" : "danger";
+		var name = detail.HumanName ?? detail.Id;
 		<tr class="@st" onclick="openDetails('@detail.Id')">
 			<td>@ind</td>
 			<td>@detail.Timestamp.ToString("dd.MM.yy HH:mm:ss")</td>
-			<td>@detail.Id</td>
+			<td>@name</td>
 			<td>@detail.Status.ToString()</td>
 		</tr>
 	}
