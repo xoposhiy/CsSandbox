@@ -34,7 +34,7 @@ namespace CsSandboxRunner
 			"System.dll", 
 			"System.Core.dll",
 			"System.Linq.dll", 
-			"mscorlib.dll",
+			"mscorlib.dll"
 		};
 
 		public SandboxRunner(InternalSubmissionModel submission)
@@ -198,10 +198,14 @@ namespace CsSandboxRunner
 			                       || startTime.Add(IdleTimeLimit).CompareTo(DateTime.Now) < 0;
 		}
 
-		private static Exception FindSerializedException(string str) // TODO: correct RE search
+		private static Exception FindSerializedException(string str)
 		{
-			str = str.TrimEnd();
 			if (!str.EndsWith("}"))
+				return null;
+
+			var pos = str.LastIndexOf(Environment.NewLine, StringComparison.Ordinal);
+
+			if (pos == -1)
 				return null;
 
 			var jsonSettings = new JsonSerializerSettings
@@ -209,20 +213,15 @@ namespace CsSandboxRunner
 				TypeNameHandling = TypeNameHandling.All
 			};
 
-			for (var pos = str.LastIndexOf('{'); pos >= 0; pos = str.LastIndexOf('{', pos - 1))
+			try
 			{
-				try
-				{
-					var obj = JsonConvert.DeserializeObject(str.Substring(pos), jsonSettings);
-					return obj as Exception;
-				}
-				catch
-				{
-				}
-				if (pos == 0) break;
+				var obj = JsonConvert.DeserializeObject(str.Substring(pos), jsonSettings);
+				return obj as Exception;
 			}
-
-			return null;
+			catch
+			{
+				return null;
+			}
 		}
 	}
 }

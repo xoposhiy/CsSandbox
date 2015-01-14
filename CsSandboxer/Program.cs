@@ -44,7 +44,8 @@ namespace CsSandboxer
 			}
 			catch (Exception ex)
 			{
-				Console.Error.WriteLine(JsonConvert.SerializeObject(ex, Settings));
+				Console.Error.WriteLine();
+				Console.Error.Write(JsonConvert.SerializeObject(ex, Settings));
 				Console.Error.Close();
 				Environment.Exit(1);
 			}
