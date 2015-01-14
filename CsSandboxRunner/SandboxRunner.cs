@@ -47,6 +47,8 @@ namespace CsSandboxRunner
 		{
 			var assembly = CreateAssemby();
 
+			_result.Verdict = Verdict.Ok;
+
 			_result.AddCompilationInfo(assembly);
 
 			if (_result.IsCompilationError())
@@ -54,11 +56,7 @@ namespace CsSandboxRunner
 
 			if (!_submission.NeedRun)
 				return _result;
-
-			
 			RunSandboxer(assembly);
-
-			_result.Finalize();
 
 			return _result;
 		}
@@ -99,13 +97,14 @@ namespace CsSandboxRunner
 				_result.Verdict = Verdict.SandboxError;
 				return;
 			}
-
+			//TODO если песочница упала? Зависла?
+			
 			while (sandboxer.StandardOutput.ReadLine() != "Ready")
 			{
 			}
 
 			sandboxer.Refresh();
-			var startUsedMemory = sandboxer.PeakWorkingSet64;
+			var startUsedMemory = sandboxer.WorkingSet64;
 			var startUsedTime = sandboxer.TotalProcessorTime;
 			var startTime = DateTime.Now;
 

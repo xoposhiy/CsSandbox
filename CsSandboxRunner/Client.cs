@@ -6,7 +6,6 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using System.Web;
 using CsSandboxRunnerApi;
-using NUnit.Framework;
 
 namespace CsSandboxRunner
 {

@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
+using System.Threading.Tasks;
 using CsSandboxApi;
 using CsSandboxRunnerApi;
 using NUnit.Framework;
@@ -66,6 +67,9 @@ namespace CsSandboxRunner
 		[TestCase("using System; enum A {a} class B { static void Main() { var input = Console.ReadLine(); foreach (var ch in input){ Console.Out.WriteLine((int)ch); }} }",
 			"█—", "9608\r\n8212\r\n", "",
 			TestName = "read Unicode")]
+		[TestCase("using System; using System.Threading; class B { static void Main() { var t = new Thread(() => Console.WriteLine(4)); t.Start(); t.Join(); } }",
+			"", "4\r\n", "",
+			TestName = "Thread")]
 		public static void TestOk(string code, string input, string output, string error)
 		{
 			var details = GetDetails(code, input);

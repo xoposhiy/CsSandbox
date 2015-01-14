@@ -41,25 +41,6 @@ namespace CsSandboxRunner
 			return results.Verdict == Verdict.CompilationError;
 		}
 
-		public static void HandleOutput(this RunningResults results, string stdout, string stderr)
-		{
-			if (stdout == null || stderr == null)
-			{
-				results.Verdict = Verdict.OutputLimit;
-			}
-			else
-			{
-				results.Output = stdout;
-				results.Error = stderr;
-			}
-		}
-
-		public static void Finalize(this RunningResults results)
-		{
-			if (results.Verdict == Verdict.NA)
-				results.Verdict = Verdict.Ok;
-		}
-
 		private static void HandleException(ref RunningResults results, Exception ex)
 		{
 			results.Verdict = Verdict.SandboxError;
