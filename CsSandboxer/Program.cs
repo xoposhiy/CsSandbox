@@ -34,8 +34,10 @@ namespace CsSandboxer
 			GC.Collect();
 
 			Console.Out.WriteLine("Ready");
-			while (Console.In.ReadLine() != "Run")
+			var runCommand = Console.In.ReadLineAsync();
+			if (!runCommand.Wait(1000) || runCommand.Result != "Run")
 			{
+				Environment.Exit(1);
 			}
 
 			try

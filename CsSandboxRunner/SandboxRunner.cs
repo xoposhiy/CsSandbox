@@ -97,10 +97,12 @@ namespace CsSandboxRunner
 				_result.Verdict = Verdict.SandboxError;
 				return;
 			}
-			//TODO если песочница упала? Зависла?
-			
-			while (sandboxer.StandardOutput.ReadLine() != "Ready")
+
+			var readyState = sandboxer.StandardOutput.ReadLineAsync();
+			if (!readyState.Wait(TimeLimitInSeconds * 1000) || readyState.Result != "Ready")
 			{
+				_result.Verdict = Verdict.SandboxError;
+				return;
 			}
 
 			sandboxer.Refresh();
