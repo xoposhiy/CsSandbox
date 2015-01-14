@@ -9,7 +9,7 @@ namespace CsSandboxRunner
 {
 	static class Program
 	{
-		private static readonly ConcurrentQueue<InternalSubmissionModel> Unhandled = new ConcurrentQueue<InternalSubmissionModel>();
+		private static readonly BlockingCollection<InternalSubmissionModel> Unhandled = new BlockingCollection<InternalSubmissionModel>();
 		private static readonly ConcurrentQueue<RunningResults> Results = new ConcurrentQueue<RunningResults>();
 
 		static void Main(string[] args)
@@ -34,12 +34,9 @@ namespace CsSandboxRunner
 			}
 
 
-			var threads = new List<Thread>();
 			for (var i = 0; i < threadsCount; ++i)
 			{
-				var thread = new Thread(Handle);
-				thread.Start();
-				threads.Add(thread);
+				new Thread(Handle).Start();
 			}
 
 			var client = new Client(address, token);
@@ -50,7 +47,7 @@ namespace CsSandboxRunner
 					var unhandled = client.TryGetSubmissions(threadsCount).Result;
 					foreach (var submission in unhandled)
 					{
-						Unhandled.Enqueue(submission);
+						Unhandled.Add(submission);
 					}
 				}
 				if (!Results.IsEmpty)
@@ -61,17 +58,14 @@ namespace CsSandboxRunner
 						results.Add(result);
 					client.SendResults(results);
 				}
+				Thread.Sleep(100);
 			}
 		}
 
 		private static void Handle()
 		{
-			var spinWait = new SpinWait();
-			while (true)
+			foreach (var submission in Unhandled.GetConsumingEnumerable())
 			{
-				InternalSubmissionModel submission;
-				while (!Unhandled.TryDequeue(out submission))
-					spinWait.SpinOnce();
 				RunningResults result;
 				try
 				{
