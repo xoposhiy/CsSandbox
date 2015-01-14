@@ -6,17 +6,21 @@ using System.Web;
 
 namespace CsSandboxApi
 {
-	public class CsSandboxClient
+	public partial class CsSandboxClient
 	{
+		private static readonly string DefaultToken;
+		private static readonly string DefaultAdress;
+
 		private readonly string _token;
 		private readonly HttpClient _httpClient;
 		private readonly int _timeLimit;
 
-		public CsSandboxClient(string token, string baseAddress, int timeLimit = 30)
+		public CsSandboxClient(string token = null, string baseAddress = null, int timeLimit = 30)
 		{
-			_token = token;
+			_token = token ?? DefaultToken;
+			var address = baseAddress ?? DefaultAdress;
 			_timeLimit = timeLimit;
-			_httpClient = new HttpClient {BaseAddress = new Uri(baseAddress)};
+			_httpClient = new HttpClient {BaseAddress = new Uri(address)};
 			_httpClient.DefaultRequestHeaders.Accept.Clear();
 			_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 		}
