@@ -30,7 +30,7 @@ namespace CsSandbox.Controllers
 			if (details == null)
 				throw new HttpResponseException(new HttpResponseMessage(HttpStatusCode.NotFound)
 				{
-					ReasonPhrase = "Посылка с указанным ID не найдена."
+					ReasonPhrase = "There isn't submission with given Id."
 				});
 
 			if (details.UserId != userId)
