@@ -70,6 +70,9 @@ namespace CsSandboxRunner
 		[TestCase("using System; using System.Threading; class B { static void Main() { var t = new Thread(() => Console.WriteLine(4)); t.Start(); t.Join(); } }",
 			"", "4\r\n", "",
 			TestName = "Thread")]
+		[TestCase(@"class A { static void Main(string[] args) {} }",
+			"", "", "",
+			TestName = "args")]
 		public static void TestOk(string code, string input, string output, string error)
 		{
 			var details = GetDetails(code, input);

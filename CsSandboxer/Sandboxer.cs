@@ -13,7 +13,8 @@ namespace CsSandboxer
 		{
 			(new PermissionSet(PermissionState.Unrestricted)).Assert();
 
-			entryPoint.Invoke(null, null);
+			var parameters = entryPoint.GetParameters().Length != 0 ? new object[] {new[] {""}} : null;
+			entryPoint.Invoke(null, parameters);
 
 			CodeAccessPermission.RevertAssert();
 		}
