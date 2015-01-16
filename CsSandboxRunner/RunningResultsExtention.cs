@@ -23,7 +23,8 @@ namespace CsSandboxRunner
 				.ToList();
 			foreach (var error in errors)
 			{
-				sb.Append(String.Format("{0} ({1}): {2}\n", error.IsWarning ? "Warning" : "Error", error.ErrorNumber,
+				sb.Append(String.Format("{0} {1} ({2}:{3}): {4}\n", error.IsWarning ? "Warning" : "Error", error.ErrorNumber,
+					error.Line, error.Column,
 					error.ErrorText));
 			}
 			if (assembly.Errors.HasErrors)
