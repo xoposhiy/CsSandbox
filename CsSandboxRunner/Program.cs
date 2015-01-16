@@ -71,12 +71,15 @@ namespace CsSandboxRunner
 				{
 					result = new SandboxRunner(submission).Run();
 				}
-				catch
+				catch (Exception ex)
 				{
 					result = new RunningResults
 					{
 						Id = submission.Id,
-						Verdict = Verdict.SandboxError
+						Verdict = Verdict.SandboxError,
+#if DEBUG
+						Error = ex.ToString()
+#endif
 					};
 				}
 				Results.Enqueue(result);

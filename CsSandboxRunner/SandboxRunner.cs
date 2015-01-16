@@ -67,7 +67,8 @@ namespace CsSandboxRunner
 			var provider = new CSharpCodeProvider(new Dictionary<string, string> {{"CompilerVersion", "v4.0"}});
 			var compilerParameters = new CompilerParameters(UsesAssemblies)
 			{
-				GenerateExecutable = true
+				GenerateExecutable = true,
+				IncludeDebugInformation = true
 			};
 
 			var assembly = provider.CompileAssemblyFromSource(compilerParameters, _submission.Code);
@@ -95,6 +96,9 @@ namespace CsSandboxRunner
 			if (sandboxer == null)
 			{
 				_result.Verdict = Verdict.SandboxError;
+#if DEBUG
+				_result.Error = "Can't start proces";
+#endif
 				return;
 			}
 
@@ -102,6 +106,9 @@ namespace CsSandboxRunner
 			if (!readyState.Wait(TimeLimitInSeconds * 1000) || readyState.Result != "Ready")
 			{
 				_result.Verdict = Verdict.SandboxError;
+#if DEBUG
+				_result.Error = "Sandbox does not respond";
+#endif
 				return;
 			}
 
@@ -158,7 +165,12 @@ namespace CsSandboxRunner
 				if (obj != null)
 					_result.HandleException(obj);
 				else
+				{
 					_result.Verdict = Verdict.SandboxError;
+#if DEBUG
+					_result.Error = "Non-zero exit code";
+#endif
+				}
 
 				return;
 			}

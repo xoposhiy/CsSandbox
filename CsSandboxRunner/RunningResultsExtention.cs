@@ -44,6 +44,9 @@ namespace CsSandboxRunner
 		private static void HandleException(ref RunningResults results, Exception ex)
 		{
 			results.Verdict = Verdict.SandboxError;
+#if DEBUG
+			results.Error = ex.ToString();
+#endif
 		}
 
 		private static void HandleException(ref RunningResults results, TargetInvocationException ex)
@@ -54,6 +57,9 @@ namespace CsSandboxRunner
 		private static void HandleInnerException(ref RunningResults results, SecurityException ex)
 		{
 			results.Verdict = Verdict.SecurityException;
+#if DEBUG
+			results.Error = ex.ToString();
+#endif
 		}
 
 		private static void HandleInnerException(ref RunningResults results, MemberAccessException ex)
