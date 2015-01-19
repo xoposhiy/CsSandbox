@@ -32,7 +32,8 @@ namespace CsSandboxApi
 			Verdict = verdict;
 			CompilationInfo = compilationInfo;
 			Output = output;
-			Error = error;
+			if (Verdict != Verdict.SandboxError && Verdict != Verdict.SecurityException)
+				Error = error;
 			HumanName = humanName;
 		}
 	}

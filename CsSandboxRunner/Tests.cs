@@ -2,7 +2,6 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.Threading;
-using System.Threading.Tasks;
 using CsSandboxApi;
 using CsSandboxRunnerApi;
 using NUnit.Framework;
@@ -102,11 +101,7 @@ namespace CsSandboxRunner
 		{
 			var details = GetDetails(code, "");
 			Assert.AreEqual(Verdict.SecurityException, details.Verdict);
-#if DEBUG
 			Assert.IsNotNullOrEmpty(details.Error);
-#else
-			Assert.IsNullOrEmpty(details.Error);
-#endif
 		}
 
 		[TestCase("using System; namespace Test { public class Program { static public void Main() { throw new Exception(); }}}",

@@ -97,9 +97,7 @@ namespace CsSandboxRunner
 			if (sandboxer == null)
 			{
 				_result.Verdict = Verdict.SandboxError;
-#if DEBUG
 				_result.Error = "Can't start proces";
-#endif
 				return;
 			}
 
@@ -107,9 +105,7 @@ namespace CsSandboxRunner
 			if (!readyState.Wait(TimeLimitInSeconds * 1000) || readyState.Result != "Ready")
 			{
 				_result.Verdict = Verdict.SandboxError;
-#if DEBUG
 				_result.Error = "Sandbox does not respond";
-#endif
 				return;
 			}
 
@@ -187,10 +183,8 @@ namespace CsSandboxRunner
 					break;
 				default:
 					_result.Verdict = Verdict.SandboxError;
-#if DEBUG
 					_result.Error = string.IsNullOrWhiteSpace(error) ? "Non-zero exit code" : error;
 					_result.Error += string.Format("\nExit code: 0x{0:X8}", exitCode);
-#endif
 					break;
 			}
 		}
