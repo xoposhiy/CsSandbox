@@ -102,13 +102,19 @@ namespace CsSandboxRunner
 		{
 			var details = GetDetails(code, "");
 			Assert.AreEqual(Verdict.SecurityException, details.Verdict);
+#if DEBUG
+			Assert.IsNotNullOrEmpty(details.Error);
+#else
 			Assert.IsNullOrEmpty(details.Error);
+#endif
 		}
 
 		[TestCase("using System; namespace Test { public class Program { static public void Main() { throw new Exception(); }}}",
 			TestName = "throw")]
 		[TestCase("using System; namespace Test { public class Program { static public void Main() { Console.Error.Write('a'); throw new Exception(); }}}",
 			TestName = "write stderr + throw")]
+		[TestCase(@"class A { static void Main() { Main(); } }",
+			TestName = "stack overflow")]
 		public static void TestRuntimeError(string code)
 		{
 			var details = GetDetails(code, "");
@@ -182,6 +188,19 @@ namespace CsSandboxRunner
 			var details = GetDetails(code, "");
 			Assert.AreEqual(Verdict.Ok, details.Verdict);
 			Assert.IsEmpty(details.Output);
+		}
+
+		[TestCase(@"using System; class A { static void Main() { if (true); } }",
+			TestName = "empty statement")]
+		[TestCase(@"class A { static void Main() { switch(true) {} } }",
+			TestName = "empty switch")]
+		[TestCase(@"using System; class A { static void Main() { Console.WriteLine(0l); } }",
+			TestName = "L")]
+		public static void TestWarnings(string code)
+		{
+			var details = GetDetails(code, "");
+			Assert.AreEqual(Verdict.Ok, details.Verdict);
+			Assert.IsNotNullOrEmpty(details.CompilationOutput);
 		}
 
 		[Test]

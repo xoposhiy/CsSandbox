@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Security;
 using System.Security.Permissions;
 using System.Security.Policy;
@@ -20,6 +21,7 @@ namespace CsSandboxer
 
 		static void Main(string[] args)
 		{
+			SetErrorMode(ErrorModes.SEM_NOGPFAULTERRORBOX); // WinOnly StackOverflow fix
 			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 			Console.InputEncoding = Encoding.UTF8;
 			Console.OutputEncoding = Encoding.UTF8;
@@ -79,6 +81,19 @@ namespace CsSandboxer
 				);
 			var sandboxer = (Sandboxer)handle.Unwrap();
 			return sandboxer;
+		}
+
+		[DllImport("kernel32.dll")]
+		static extern ErrorModes SetErrorMode(ErrorModes uMode);
+
+		[Flags]
+		private enum ErrorModes : uint
+		{
+			SYSTEM_DEFAULT = 0x0,
+			SEM_FAILCRITICALERRORS = 0x0001,
+			SEM_NOALIGNMENTFAULTEXCEPT = 0x0004,
+			SEM_NOGPFAULTERRORBOX = 0x0002,
+			SEM_NOOPENFILEERRORBOX = 0x8000
 		}
 	}
 }

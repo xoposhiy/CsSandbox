@@ -68,7 +68,8 @@ namespace CsSandboxRunner
 			var compilerParameters = new CompilerParameters(UsesAssemblies)
 			{
 				GenerateExecutable = true,
-				IncludeDebugInformation = true
+				IncludeDebugInformation = true,
+				WarningLevel = 4,
 			};
 
 			var assembly = provider.CompileAssemblyFromSource(compilerParameters, _submission.Code);
@@ -78,7 +79,7 @@ namespace CsSandboxRunner
 
 		private void RunSandboxer(CompilerResults assembly)
 		{
-			var inputBytes = Encoding.UTF8.GetBytes(_submission.Input);
+			var inputBytes = Encoding.UTF8.GetBytes(_submission.Input); 
 			var input = Encoding.Default.GetString(inputBytes);
 
 			var startInfo = new ProcessStartInfo("CsSandboxer", String.Format("\"{0}\" {1}", Path.GetFullPath(assembly.PathToAssembly), _submission.Id))
@@ -165,21 +166,33 @@ namespace CsSandboxRunner
 				if (obj != null)
 					_result.HandleException(obj);
 				else
-				{
-					_result.Verdict = Verdict.SandboxError;
-#if DEBUG
-					_result.Error = "Non-zero exit code";
-#endif
-				}
+					HandleNtStatus(sandboxer.ExitCode, error);
 
 				return;
 			}
-
 
 			stdoutReader.Wait();
 			stderrReader.Wait();
 			_result.Output = new string(stdout, 0, stdoutReader.Result);
 			_result.Error = new string(stderr, 0, stderrReader.Result);
+		}
+
+		private void HandleNtStatus(int exitCode, string error)
+		{
+			switch ((uint)exitCode)
+			{
+				case 0xC00000FD:
+					_result.Verdict = Verdict.RuntimeError;
+					_result.Error = "Stack overflow exception.";
+					break;
+				default:
+					_result.Verdict = Verdict.SandboxError;
+#if DEBUG
+					_result.Error = string.IsNullOrWhiteSpace(error) ? "Non-zero exit code" : error;
+					_result.Error += string.Format("\nExit code: 0x{0:X8}", exitCode);
+#endif
+					break;
+			}
 		}
 
 		private bool IsOutputLimit(Task<int> reader)
