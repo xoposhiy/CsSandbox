@@ -23,7 +23,7 @@ namespace CsSandboxRunner
 				.ToList();
 			foreach (var error in errors)
 			{
-				sb.Append(String.Format("{0} {1} ({2}:{3}): {4}\n", error.IsWarning ? "Warning" : "Error", error.ErrorNumber,
+				sb.Append(String.Format("({2},{3}): {0} {1}: {4}\n", error.IsWarning ? "warning" : "error", error.ErrorNumber,
 					error.Line, error.Column,
 					error.ErrorText));
 			}
@@ -66,6 +66,9 @@ namespace CsSandboxRunner
 		private static void HandleInnerException(ref RunningResults results, MemberAccessException ex)
 		{
 			results.Verdict = Verdict.SecurityException;
+#if DEBUG
+			results.Error = ex.ToString();
+#endif
 		}
 
 		private static void HandleInnerException(ref RunningResults results, Exception ex)
