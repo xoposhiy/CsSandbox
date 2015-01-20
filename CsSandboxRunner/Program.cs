@@ -25,14 +25,8 @@ namespace CsSandboxRunner
 			var address = args[0];
 			var token = args[1];
 			int threadsCount;
-			if (args.Length < 3)
-				threadsCount = 1;
-			else
-			{
-				if (!int.TryParse(args[2], out threadsCount))
-					threadsCount = 1;
-			}
-
+			if (args.Length < 3 || !int.TryParse(args[2], out threadsCount))
+				threadsCount = Environment.ProcessorCount - 1;
 
 			for (var i = 0; i < threadsCount; ++i)
 			{
