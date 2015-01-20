@@ -57,7 +57,7 @@ namespace CsSandboxRunner
 		}
 
 		private static void Handle()
-		{
+		{	
 			foreach (var submission in Unhandled.GetConsumingEnumerable())
 			{
 				RunningResults result;
@@ -71,9 +71,7 @@ namespace CsSandboxRunner
 					{
 						Id = submission.Id,
 						Verdict = Verdict.SandboxError,
-#if DEBUG
 						Error = ex.ToString()
-#endif
 					};
 				}
 				Results.Enqueue(result);
