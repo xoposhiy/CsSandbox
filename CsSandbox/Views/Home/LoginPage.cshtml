@@ -1,0 +1,21 @@
+﻿@model bool
+
+@{
+	ViewBag.Title = "Login";
+	var isSuccess = Model;
+}
+
+<h2> Login </h2>
+
+@using (Html.BeginForm("Login", "Home"))
+{
+	<div class="form-group">
+		<label for="token">Token</label>
+		<input type="password" class="form-control" id="token" placeholder="Token" name="token">
+	</div>
+	<button type="submit" class="btn btn-default">Submit</button>
+	if (!isSuccess)
+	{
+		<span class="label label-danger">Error! Wrong token</span>
+	}
+}

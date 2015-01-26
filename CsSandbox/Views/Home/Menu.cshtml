@@ -1,0 +1,11 @@
+﻿@model bool 
+
+@if (Model)
+{
+	<li>@Html.ActionLink("SubmissionsList", "All", "View")</li>
+	<li>@Html.ActionLink("Logout", "Logout", "Home")</li>
+}
+else
+{
+	<li>@Html.ActionLink("Login", "LoginPage", "Home")</li>
+}

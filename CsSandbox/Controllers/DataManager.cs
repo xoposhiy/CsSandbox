@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Net;
 using System.Net.Http;
+using System.Web;
 using System.Web.Http;
 using CsSandbox.DataContext;
 using CsSandbox.Models;
@@ -22,9 +23,41 @@ namespace CsSandbox.Controllers
 			return userId;
 		}
 
+		private string GetUserId(HttpCookie cookie)
+		{
+			var userId = FindUserId(cookie);
+			if (userId == null)
+				throw new HttpResponseException(HttpStatusCode.Unauthorized);
+			return userId;
+		}
+
+		public string FindUserId(string token)
+		{
+			return _users.FindUser(token);
+		}
+
+		public string FindUserId(HttpCookie cookie)
+		{
+			if (cookie == null)
+				return null;
+			var token = cookie.Value;
+			return string.IsNullOrWhiteSpace(token) ? null : _users.FindUser(token);
+		}
+
 		public SubmissionDetails GetDetails(string id, string token)
 		{
 			var userId = GetUserId(token);
+			return GetDetailsByUserId(id, userId);
+		}
+
+		public SubmissionDetails GetDetails(string id, HttpCookie cookie)
+		{
+			var userId = GetUserId(cookie);
+			return GetDetailsByUserId(id, userId);
+		}
+
+		private SubmissionDetails GetDetailsByUserId(string id, string userId)
+		{
 			var details = _sandbox.FindDetails(id);
 
 			if (details == null)
@@ -45,9 +78,9 @@ namespace CsSandbox.Controllers
 			return _sandbox.Create(userId, model);
 		}
 
-		public IEnumerable<SubmissionDetails> GetAllSubmission(string token, int max, int skip)
+		public IEnumerable<SubmissionDetails> GetAllSubmission(HttpCookie cookie, int max, int skip)
 		{
-			var userId = GetUserId(token);
+			var userId = GetUserId(cookie);
 			return _sandbox.GetAllSubmissions(userId, max, skip);
 		}
 	}

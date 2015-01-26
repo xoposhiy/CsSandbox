@@ -3,7 +3,6 @@
 
 @{
 	var model = Model as SubmissionsListModel;
-	var token = model.Token;
 	var ind = 0;
 }
 
@@ -37,7 +36,6 @@
 			url: '/View/GetDetails',
 			data:
 			{
-				token: "@token",
 				id: id
 			}
 		}).always(function(ans) {

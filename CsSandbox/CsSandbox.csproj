@@ -306,6 +306,8 @@
     <Content Include="Views\View\All.cshtml" />
     <Content Include="Views\View\SubmissionsList.cshtml" />
     <Content Include="Views\View\GetDetails.cshtml" />
+    <Content Include="Views\Home\Menu.cshtml" />
+    <Content Include="Views\Home\LoginPage.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="App_Data\" />
