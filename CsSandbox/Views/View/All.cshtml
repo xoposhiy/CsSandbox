@@ -1,5 +1,7 @@
-﻿@{
+﻿@using CsSandbox.Models
+@{
     Layout = "~/Views/Shared/_Layout.cshtml";
+	var model = Model as ViewModel;
 }
 
-@Html.Action("SubmissionsList", "View", new { token = (string)Model })
+@Html.Action("SubmissionsList", "View", new { model.Token, model.Max, model.Skip })

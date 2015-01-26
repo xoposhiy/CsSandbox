@@ -226,6 +226,7 @@
     <Compile Include="Models\SubmissionDetailsExtentions.cs" />
     <Compile Include="Models\SubmissionsListModel.cs" />
     <Compile Include="Models\User.cs" />
+    <Compile Include="Models\ViewModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Providers\ApplicationOAuthProvider.cs" />
     <Compile Include="Results\ChallengeResult.cs" />
@@ -269,6 +270,7 @@
     <Content Include="Areas\HelpPage\Views\_ViewStart.cshtml" />
     <Content Include="key.snk" />
     <None Include="Properties\PublishProfiles\CsSandbox.pubxml" />
+    <None Include="Properties\PublishProfiles\kontur-labs02.pubxml" />
     <None Include="Scripts\jquery-1.10.2.intellisense.js" />
     <Content Include="Scripts\bootstrap.js" />
     <Content Include="Scripts\bootstrap.min.js" />

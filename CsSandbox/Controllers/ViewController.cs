@@ -9,9 +9,14 @@ namespace CsSandbox.Controllers
 	{
 		private readonly DataManager _dataManager = new DataManager();
 
-		public ActionResult All(string token)
+		public ActionResult All(string token, int max = 200, int skip = 0)
 		{
-			return View((object)token);
+			return View(new ViewModel
+			{
+				Token = token, 
+				Max = max, 
+				Skip = skip
+			});
 		}
 
 		public ActionResult SubmissionsList(string token, int max = 200, int skip = 0)
