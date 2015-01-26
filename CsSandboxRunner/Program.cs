@@ -36,7 +36,7 @@ namespace CsSandboxRunner
 			var client = new Client(address, token);
 			while (true)
 			{
-				if (Unhandled.Count < threadsCount / 2)
+				if (Unhandled.Count < (threadsCount + 1) / 2)
 				{
 					var unhandled = client.TryGetSubmissions(threadsCount).Result;
 					foreach (var submission in unhandled)
