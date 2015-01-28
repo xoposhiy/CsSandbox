@@ -21,7 +21,7 @@ namespace CsSandboxer
 
 		static void Main(string[] args)
 		{
-			SetErrorMode(ErrorModes.SEM_NOGPFAULTERRORBOX); // WinOnly StackOverflow fix
+			SetErrorMode(ErrorModes.SEM_NOGPFAULTERRORBOX); // WinOnly StackOverflow handling fix
 			Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture;
 			Console.InputEncoding = Encoding.UTF8;
 			Console.OutputEncoding = Encoding.UTF8;

@@ -28,6 +28,8 @@ namespace CsSandboxRunner
 			if (args.Length < 3 || !int.TryParse(args[2], out threadsCount))
 				threadsCount = Environment.ProcessorCount - 1;
 
+			Console.Error.WriteLine("Start with {0} threads", threadsCount);
+
 			for (var i = 0; i < threadsCount; ++i)
 			{
 				new Thread(Handle).Start();

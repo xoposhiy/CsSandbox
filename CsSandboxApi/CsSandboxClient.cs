@@ -25,14 +25,15 @@ namespace CsSandboxApi
 			_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 		}
 
-		public async Task<Submission> CreateSubmit(string code, string input, bool needRun = true)
+		public async Task<Submission> CreateSubmit(string code, string input, string name = null, bool needRun = true)
 		{
 			var model = new SubmissionModel
 			{
 				Code = code,
 				Input = input,
 				NeedRun = needRun,
-				Token = _token
+				Token = _token,
+				HumanName = name
 			};
 
 			var response = await _httpClient.PostAsJsonAsync("/CreateSubmission", model);
@@ -70,9 +71,9 @@ namespace CsSandboxApi
 			return await response.Content.ReadAsAsync<PublicSubmissionDetails>();
 		}
 
-		public async Task<PublicSubmissionDetails> Submit(string code, string input)
+		public async Task<PublicSubmissionDetails> Submit(string code, string input, string name = null)
 		{
-			var submission = await CreateSubmit(code, input);
+			var submission = await CreateSubmit(code, input, name);
 
 			var count = _timeLimit;
 			var lastStatus = await submission.GetStatus();
