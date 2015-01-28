@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using CsSandboxApi;
 
 namespace CsSandbox.Models
@@ -18,12 +19,14 @@ namespace CsSandbox.Models
 		public virtual User User { get; set; }
 
 		[Required]
+		[Index("ViewAll", 1)]
 		public string UserId { get; set; }
 
 		[StringLength(10 * 1024 * 1024)]
 		public string Input { get; set; }
 
 		[Required]
+		[Index("ViewAll", 2)]
 		public DateTime Timestamp { get; set; }
 
 		[Required]

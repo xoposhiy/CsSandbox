@@ -213,6 +213,10 @@
     <Compile Include="Migrations\201501141418400_HumanNames.Designer.cs">
       <DependentUpon>201501141418400_HumanNames.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201501261321509_IndexForView.cs" />
+    <Compile Include="Migrations\201501261321509_IndexForView.Designer.cs">
+      <DependentUpon>201501261321509_IndexForView.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\Role.cs" />
@@ -328,6 +332,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201501141418400_HumanNames.resx">
       <DependentUpon>201501141418400_HumanNames.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201501261321509_IndexForView.resx">
+      <DependentUpon>201501261321509_IndexForView.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
