@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Text;
-using System.Threading.Tasks;
 using CsSandboxApi;
 using CsSandboxRunnerApi;
 using Microsoft.CSharp;
@@ -101,11 +100,25 @@ namespace CsSandboxRunner
 				return;
 			}
 
+			var stderrReader = new AsyncReader(sandboxer.StandardError, OutputLimit + 1);
+
 			var readyState = sandboxer.StandardOutput.ReadLineAsync();
 			if (!readyState.Wait(TimeLimitInSeconds * 1000) || readyState.Result != "Ready")
 			{
+				if (!sandboxer.HasExited)
+				{
+					sandboxer.Kill();
+					_result.Verdict = Verdict.SandboxError;
+					_result.Error = "Sandbox does not respond";
+					return;
+				}
+				if (sandboxer.ExitCode != 0)
+				{
+					HandleNonZeroExitCode(stderrReader.GetData(), sandboxer.ExitCode);
+					return;
+				}
 				_result.Verdict = Verdict.SandboxError;
-				_result.Error = "Sandbox does not respond";
+				_result.Error = "Sandbox exit before respond";
 				return;
 			}
 
@@ -117,11 +130,7 @@ namespace CsSandboxRunner
 			sandboxer.StandardInput.WriteLine("Run");
 			sandboxer.StandardInput.WriteLineAsync(input);
 
-			var stdout = new char[OutputLimit + 1];
-			var stdoutReader = sandboxer.StandardOutput.ReadBlockAsync(stdout, 0, OutputLimit + 1);
-			var stderr = new char[OutputLimit + 1];
-			var stderrReader = sandboxer.StandardError.ReadBlockAsync(stderr, 0, OutputLimit + 1);
-
+			var stdoutReader = new AsyncReader(sandboxer.StandardOutput, OutputLimit + 1);
 			while (!sandboxer.HasExited
 			       && !IsTimeLimitExpected(sandboxer, startTime, startUsedTime)
 			       && !IsMemoryLimitExpected(sandboxer, startUsedMemory) 
@@ -154,23 +163,22 @@ namespace CsSandboxRunner
 			sandboxer.WaitForExit();
 			if (sandboxer.ExitCode != 0)
 			{
-				stderrReader.Wait();
-				var error = new string(stderr, 0, stderrReader.Result);
-
-				var obj = FindSerializedException(error);
-
-				if (obj != null)
-					_result.HandleException(obj);
-				else
-					HandleNtStatus(sandboxer.ExitCode, error);
-
+				HandleNonZeroExitCode(stderrReader.GetData(), sandboxer.ExitCode);
 				return;
 			}
 
-			stdoutReader.Wait();
-			stderrReader.Wait();
-			_result.Output = new string(stdout, 0, stdoutReader.Result);
-			_result.Error = new string(stderr, 0, stderrReader.Result);
+			_result.Output = stdoutReader.GetData();
+			_result.Error = stderrReader.GetData();
+		}
+
+		private void HandleNonZeroExitCode(string error, int exitCode)
+		{
+			var obj = FindSerializedException(error);
+
+			if (obj != null)
+				_result.HandleException(obj);
+			else
+				HandleNtStatus(exitCode, error);
 		}
 
 		private void HandleNtStatus(int exitCode, string error)
@@ -189,10 +197,10 @@ namespace CsSandboxRunner
 			}
 		}
 
-		private bool IsOutputLimit(Task<int> reader)
+		private bool IsOutputLimit(AsyncReader reader)
 		{
 			return _hasOutputLimit = _hasOutputLimit
-			                         || (reader.IsCompleted && reader.Result > OutputLimit);
+			                         || (reader.ReadedLength > OutputLimit);
 		}
 
 		private bool IsMemoryLimitExpected(Process sandboxer, long startUsedMemory)

@@ -28,19 +28,29 @@ namespace CsSandboxer
 
 			var assemblyPath = args[0];
 			var id = args[1];
+			Assembly assembly = null;
+			Sandboxer sandboxer = null;
 
-			var assembly = Assembly.LoadFile(assemblyPath);
-			var domain = CreateDomain(id, assemblyPath);
-			var sandboxer = CreateSandboxer(domain);
+			try
+			{
+				assembly = Assembly.LoadFile(assemblyPath);
+				var domain = CreateDomain(id, assemblyPath);
+				sandboxer = CreateSandboxer(domain);
+			}
+			catch (Exception ex)
+			{
+				HandleException(ex);
+			}
+
+			if (assembly == null || sandboxer == null)
+				Environment.Exit(1);
 
 			GC.Collect();
 
 			Console.Out.WriteLine("Ready");
 			var runCommand = Console.In.ReadLineAsync();
 			if (!runCommand.Wait(1000) || runCommand.Result != "Run")
-			{
 				Environment.Exit(1);
-			}
 
 			try
 			{
@@ -48,11 +58,16 @@ namespace CsSandboxer
 			}
 			catch (Exception ex)
 			{
-				Console.Error.WriteLine();
-				Console.Error.Write(JsonConvert.SerializeObject(ex, Settings));
-				Console.Error.Close();
-				Environment.Exit(1);
+				HandleException(ex);
 			}
+		}
+
+		private static void HandleException(Exception ex)
+		{
+			Console.Error.WriteLine();
+			Console.Error.Write(JsonConvert.SerializeObject(ex, Settings));
+			Console.Error.Close();
+			Environment.Exit(1);
 		}
 
 		private static AppDomain CreateDomain(string id, string assemblyPath)
