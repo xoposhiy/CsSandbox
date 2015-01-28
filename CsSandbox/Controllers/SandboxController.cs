@@ -9,6 +9,8 @@ namespace CsSandbox.Controllers
     {
 	    private readonly DataManager _dataManager = new DataManager();
 
+		/// <summary> Create and place submission to queue. </summary>
+		/// <returns> Return SubmissionID used in determining status and details of submission. </returns>
 		[HttpPost]
 		[Route("CreateSubmission")]
 		public string CreateSubmission(SubmissionModel model)
@@ -19,6 +21,8 @@ namespace CsSandbox.Controllers
 			return _dataManager.CreateSandbox(model);
 		}
 
+		/// <param name="id"> SubmissionID</param>
+		/// <param name="token"> Autherization token </param>
 	    [HttpGet]
 		[Route("GetSubmissionStatus")]
 		public SubmissionStatus GetSubmissionStatus(string id, string token)
@@ -27,7 +31,9 @@ namespace CsSandbox.Controllers
 			return details.Status;
 		}
 
-	    [HttpGet]
+		/// <param name="id"> SubmissionID</param>
+		/// <param name="token"> Autherization token </param>
+		[HttpGet]
 		[Route("GetSubmissionDetails")]
 		public PublicSubmissionDetails GetSubmissionDetails(string id, string token)
 		{

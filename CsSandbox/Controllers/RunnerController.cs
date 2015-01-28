@@ -16,6 +16,10 @@ namespace CsSandbox.Controllers
 		private readonly SubmissionRepo _submissionsRepo = new SubmissionRepo();
 		private readonly SandboxHandler _sandboxHandler = new SandboxHandler();
 
+		/// <summary>
+		/// Return one submission for testing purposes
+		/// </summary>
+		/// <param name="token"> Runner autherization token </param>
 		[HttpGet]
 		[Route("TryGetSubmission")]
 	    public InternalSubmissionModel TryGetSubmission(string token)
@@ -34,6 +38,11 @@ namespace CsSandbox.Controllers
 			};
 	    }
 
+	    /// <summary>
+	    /// Return list of submissions for testing purposes
+	    /// </summary>
+	    /// <param name="token"> Runner autherization token </param>
+	    /// <param name="count"> Count of submission </param>
 	    [HttpGet]
 	    [Route("GetSubmissions")]
 	    public List<InternalSubmissionModel> GetSubmissions([FromUri] string token, [FromUri] int count)
@@ -51,6 +60,10 @@ namespace CsSandbox.Controllers
 			    .ToList();
 	    }
 
+	    /// <summary>
+	    /// Get testing result
+	    /// </summary>
+		/// <param name="token"> Runner autherization token </param>
 	    [HttpPost]
 		[Route("PostResult")]
 	    public void PostResult([FromUri]string token, RunningResults result)
@@ -62,6 +75,10 @@ namespace CsSandbox.Controllers
 			_sandboxHandler.SaveResult(result);
 	    }
 
+		/// <summary>
+		/// Get testing results
+		/// </summary>
+		/// <param name="token"> Runner autherization token </param>
 		[HttpPost]
 		[Route("PostResults")]
 		public void PostResults([FromUri]string token, List<RunningResults> results)

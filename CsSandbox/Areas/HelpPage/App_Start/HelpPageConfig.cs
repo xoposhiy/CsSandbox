@@ -15,6 +15,8 @@ using System.Web.Http;
 #if Handle_PageResultOfT
 using System.Web.Http.OData;
 #endif
+using CsSandboxApi;
+using CsSandboxRunnerApi;
 
 namespace CsSandbox.Areas.HelpPage
 {
@@ -34,16 +36,17 @@ namespace CsSandbox.Areas.HelpPage
         public static void Register(HttpConfiguration config)
         {
             //// Uncomment the following to use the documentation from XML documentation file.
-            //config.SetDocumentationProvider(new XmlDocumentationProvider(HttpContext.Current.Server.MapPath("~/App_Data/XmlDocument.xml")));
+            config.SetDocumentationProvider(new XmlDocumentationProvider(HttpContext.Current.Server.MapPath("~/bin/CsSandbox.xml")));
 
             //// Uncomment the following to use "sample string" as the sample for all actions that have string as the body parameter or return type.
             //// Also, the string arrays will be used for IEnumerable<string>. The sample objects will be serialized into different media type 
             //// formats by the available formatters.
-            //config.SetSampleObjects(new Dictionary<Type, object>
-            //{
+	        //config.SetSampleObjects(new Dictionary<Type, object>
+	        //{
             //    {typeof(string), "sample string"},
             //    {typeof(IEnumerable<string>), new string[]{"sample 1", "sample 2"}}
-            //});
+	        //});
+			GenerateSamples(config);
 
             // Extend the following to provide factories for types not handled automatically (those lacking parameterless
             // constructors) or for which you prefer to use non-default property values. Line below provides a fallback
@@ -79,6 +82,79 @@ namespace CsSandbox.Areas.HelpPage
             //// The sample will be generated as if the controller named "Values" and action named "Post" were returning a string.
             //config.SetActualResponseType(typeof(string), "Values", "Post");
         }
+
+	    private static void GenerateSamples(HttpConfiguration config)
+	    {
+		    const string sampleCode =
+			    "using System;\nclass Program\n{\n\tstatic void Main()\n\t{\n\t\tvar input = Console.ReadLine();\n\t\tConsole.WriteLine(input);\n\t\treturn ;\n\t\tinput = Console.ReadLine();\n\t}\n}\n";
+			const string sampleInput = "Hello, world.";
+		    var sampleOutput = sampleInput + Environment.NewLine;
+
+		    const string humanName = "First program";
+			const string submissionId = "00000000-0000-0000-0000-000000000000";
+
+		    var compilationInfo = "(9,3): warning CS0162: Unreachable code detected" + Environment.NewLine;
+
+		    var sampleInternalSubmissionModel = new InternalSubmissionModel
+		    {
+			    Id = submissionId,
+			    Code = sampleCode,
+			    Input = sampleInput,
+			    NeedRun = true
+		    };
+
+		    var sampleRunningResult = new RunningResults
+		    {
+			    Id = submissionId,
+			    Verdict = Verdict.Ok,
+			    CompilationOutput = compilationInfo,
+			    Output = sampleOutput,
+			    Error = "",
+		    };
+
+		    config.SetSampleObjects(new Dictionary<Type, object>
+	        {
+		        {
+			        typeof (SubmissionModel), new SubmissionModel
+			        {
+				        Token = "Autherization token",
+				        Code = sampleCode,
+				        Input = sampleInput,
+				        HumanName = humanName,
+				        NeedRun = true
+			        }
+		        },
+		        {
+			        typeof (PublicSubmissionDetails), new PublicSubmissionDetails
+					(
+						id: submissionId,
+						status: SubmissionStatus.Done,
+						code: sampleCode,
+						input: sampleInput,
+						timestamp: new DateTime(1970, 1, 1), 
+						needRun: true,
+						verdict: Verdict.Ok,
+						compilationInfo: compilationInfo,
+						output: sampleOutput,
+						error: "",
+						humanName: humanName
+					)
+		        },
+		        {
+			        typeof(InternalSubmissionModel), sampleInternalSubmissionModel
+		        },
+		        {
+			        typeof(List<InternalSubmissionModel>), new List<InternalSubmissionModel> {sampleInternalSubmissionModel, sampleInternalSubmissionModel}
+		        },
+		        {
+			        typeof(RunningResults), sampleRunningResult
+		        },
+		        {
+			        typeof(List<RunningResults>), new List<RunningResults> {sampleRunningResult, sampleRunningResult}
+		        }
+	        });
+
+	    }
 
 #if Handle_PageResultOfT
         private static object GeneratePageResult(HelpPageSampleGenerator sampleGenerator, Type type)
