@@ -11,7 +11,11 @@ namespace CsSandboxTests
 	static class Tests
 	{
 		private const string Code = @"class Program { static void Main() { } }";
-		private const string Adress = "http://localhost:62992/";
+
+		private const string TlCode =
+			@"using System; using System.Collections.Generic; class Program { static void Main() { const int memory = 63 * 1024 * 1024; var a = new byte[memory]; for (var i = 0; i < 1000*1000*1000; ++i){ a[i % memory] = (byte)i; } }}";
+//		private const string Adress = "http://localhost:62992/";
+		private const string Adress = "http://kontur-labs02:9595/";
 
 		[Test]
 		public static async void TestOk()
@@ -20,6 +24,17 @@ namespace CsSandboxTests
 			Assert.AreEqual(Verdict.Ok, details.Verdict);
 			Assert.IsEmpty(details.Output);
 			Assert.IsEmpty(details.Error);
+		}
+
+		[Test]
+		[Explicit]
+		public static async void TestLatency()
+		{
+			for (var i = 0; i < 10; ++i)
+			{
+				var details = await GetDetails(TlCode, "");
+				Assert.AreEqual(Verdict.TimeLimit, details.Verdict);
+			}
 		}
 
 		[Test]

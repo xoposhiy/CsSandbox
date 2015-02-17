@@ -19,7 +19,11 @@ namespace CsSandbox.Controllers
 			if (_dataManager.FindUserId(token) == null)
 				return RedirectToAction("Index", "Home", false);
 
-			var cookie = new HttpCookie("token", token);
+			var cookie = new HttpCookie("token", token)
+			{
+				HttpOnly = true,
+				Secure = true
+			};
 			Response.SetCookie(cookie);
 			return RedirectToAction("All", "View");
 		}

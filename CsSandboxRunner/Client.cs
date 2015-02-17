@@ -17,7 +17,7 @@ namespace CsSandboxRunner
 		public Client(string address, string token)
 		{
 			_token = token;
-			_httpClient = new HttpClient {BaseAddress = new Uri(address)};
+			_httpClient = new HttpClient {BaseAddress = new Uri(address + "/")};
 			_httpClient.DefaultRequestHeaders.Accept.Clear();
 			_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 		}
@@ -25,7 +25,7 @@ namespace CsSandboxRunner
 
 		public async Task<InternalSubmissionModel> TryGetSubmission()
 		{
-			var uri = GetUri("/TryGetSubmission");
+			var uri = GetUri("TryGetSubmission");
 			var response = await _httpClient.GetAsync(uri);
 			if (response.IsSuccessStatusCode) 
 				return await response.Content.ReadAsAsync<InternalSubmissionModel>();
@@ -37,7 +37,7 @@ namespace CsSandboxRunner
 
 		public async Task<List<InternalSubmissionModel>> TryGetSubmissions(int threadsCount)
 		{
-			var uri = GetUri("/GetSubmissions", new[] {"count", threadsCount.ToString(CultureInfo.InvariantCulture)});
+			var uri = GetUri("GetSubmissions", new[] {"count", threadsCount.ToString(CultureInfo.InvariantCulture)});
 			var response = await _httpClient.GetAsync(uri);
 			if (response.IsSuccessStatusCode) 
 				return await response.Content.ReadAsAsync<List<InternalSubmissionModel>>();
@@ -47,7 +47,7 @@ namespace CsSandboxRunner
 
 		public async void SendResult(RunningResults result)
 		{
-			var uri = GetUri("/PostResult");
+			var uri = GetUri("PostResult");
 			var responce = await _httpClient.PostAsJsonAsync(uri, result);
 
 			if (responce.IsSuccessStatusCode) return;
@@ -59,7 +59,7 @@ namespace CsSandboxRunner
 
 		public async void SendResults(List<RunningResults> results)
 		{
-			var uri = GetUri("/PostResults");
+			var uri = GetUri("PostResults");
 			var responce = await _httpClient.PostAsJsonAsync(uri, results);
 
 			if (responce.IsSuccessStatusCode) return;

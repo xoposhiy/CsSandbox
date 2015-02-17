@@ -15,7 +15,7 @@ namespace CsSandbox.Utils
 		{
 			var db = new CsSandboxDb();
 			var userId = Guid.NewGuid().ToString();
-			var tokenBytes = new byte[64];
+			var tokenBytes = new byte[32];
 			new RNGCryptoServiceProvider().GetBytes(tokenBytes);
 			var token = BitConverter.ToString(tokenBytes).Replace("-", "").ToLower();
 			db.Users.Add(new User
