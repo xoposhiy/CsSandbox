@@ -25,7 +25,7 @@ namespace CsSandboxApi
 			_httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
 		}
 
-		public async Task<Submission> CreateSubmit(string code, string input, string name = null, bool needRun = true)
+		public async Task<Submission> CreateSubmit(string code, string input, string displayName = null, bool needRun = true)
 		{
 			var model = new SubmissionModel
 			{
@@ -33,10 +33,10 @@ namespace CsSandboxApi
 				Input = input,
 				NeedRun = needRun,
 				Token = _token,
-				HumanName = name
+				DisplayName = displayName
 			};
 
-			var response = await _httpClient.PostAsJsonAsync("/CreateSubmission", model);
+			var response = await _httpClient.PostAsJsonAsync("CreateSubmission", model);
 
 			if (!response.IsSuccessStatusCode)
 			{
@@ -49,7 +49,7 @@ namespace CsSandboxApi
 
 		public async Task<SubmissionStatus> GetSubmissionStatus(string submissionId)
 		{
-			var uri = GetUriForSubmission("/GetSubmissionStatus", submissionId);
+			var uri = GetUriForSubmission("GetSubmissionStatus", submissionId);
 			var response = await _httpClient.GetAsync(uri);
 			if (!response.IsSuccessStatusCode)
 			{
@@ -61,7 +61,7 @@ namespace CsSandboxApi
 
 		public async Task<PublicSubmissionDetails> GetSubmissionDetails(string submissionId)
 		{
-			var uri = GetUriForSubmission("/GetSubmissionDetails", submissionId);
+			var uri = GetUriForSubmission("GetSubmissionDetails", submissionId);
 			var response = await _httpClient.GetAsync(uri);
 			if (!response.IsSuccessStatusCode)
 			{
@@ -71,9 +71,9 @@ namespace CsSandboxApi
 			return await response.Content.ReadAsAsync<PublicSubmissionDetails>();
 		}
 
-		public async Task<PublicSubmissionDetails> Submit(string code, string input, string name = null)
+		public async Task<PublicSubmissionDetails> Submit(string code, string input, string displayName = null)
 		{
-			var submission = await CreateSubmit(code, input, name);
+			var submission = await CreateSubmit(code, input, displayName);
 
 			var count = _timeLimit;
 			var lastStatus = await submission.GetStatus();

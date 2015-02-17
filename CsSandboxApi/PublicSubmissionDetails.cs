@@ -19,9 +19,9 @@ namespace CsSandboxApi
 		public readonly string Output;
 		public readonly string Error;
 
-		public readonly string HumanName;
+		public readonly string DisplayName;
 
-		public PublicSubmissionDetails(string id, SubmissionStatus status, string code, string input, DateTime timestamp, bool needRun, Verdict verdict, string compilationInfo, string output, string error, string humanName)
+		public PublicSubmissionDetails(string id, SubmissionStatus status, string code, string input, DateTime timestamp, bool needRun, Verdict verdict, string compilationInfo, string output, string error, string displayName)
 		{
 			Id = id;
 			Status = status;
@@ -32,9 +32,8 @@ namespace CsSandboxApi
 			Verdict = verdict;
 			CompilationInfo = compilationInfo;
 			Output = output;
-			if (Verdict != Verdict.SandboxError && Verdict != Verdict.SecurityException)
-				Error = error;
-			HumanName = humanName;
+			Error = error;
+			DisplayName = displayName;
 		}
 	}
 }

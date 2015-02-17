@@ -90,7 +90,7 @@ namespace CsSandbox.Areas.HelpPage
 			const string sampleInput = "Hello, world.";
 		    var sampleOutput = sampleInput + Environment.NewLine;
 
-		    const string humanName = "First program";
+		    const string displayName = "First program";
 			const string submissionId = "00000000-0000-0000-0000-000000000000";
 
 		    var compilationInfo = "(9,3): warning CS0162: Unreachable code detected" + Environment.NewLine;
@@ -120,7 +120,7 @@ namespace CsSandbox.Areas.HelpPage
 				        Token = "Autherization token",
 				        Code = sampleCode,
 				        Input = sampleInput,
-				        HumanName = humanName,
+				        DisplayName = displayName,
 				        NeedRun = true
 			        }
 		        },
@@ -137,7 +137,7 @@ namespace CsSandbox.Areas.HelpPage
 						compilationInfo: compilationInfo,
 						output: sampleOutput,
 						error: "",
-						humanName: humanName
+						displayName: displayName
 					)
 		        },
 		        {

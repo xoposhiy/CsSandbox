@@ -44,7 +44,7 @@ namespace CsSandbox.Models
 		public string Error { get; set; }
 
 		[StringLength(1024)]
-		public string HumanName { get; set; }
+		public string DisplayName { get; set; }
 
 		public bool NeedRun { get; set; }
 	}

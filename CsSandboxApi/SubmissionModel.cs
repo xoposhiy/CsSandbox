@@ -22,7 +22,7 @@ namespace CsSandboxApi
 		/// Submission name displayed in submission list.
 		/// </summary>
 		[StringLength(1024, ErrorMessage = "Info length is too large")]
-		public string HumanName { get; set; }
+		public string DisplayName { get; set; }
 
 		/// <summary>
 		/// Only compile if false.

@@ -1,8 +1,8 @@
 ﻿@using CsSandbox.Models
 @using CsSandboxApi
+@model SubmissionsListModel
 
 @{
-	var model = Model as SubmissionsListModel;
 	var ind = 0;
 }
 
@@ -15,11 +15,11 @@
 			<th>State</th>
 		</tr>
 	</thead>
-	@foreach (var detail in  model.Submissions)
+	@foreach (var detail in  Model.Submissions)
 	{
 		ind++;
 		var st = detail.Status == SubmissionStatus.Done ? "success" : "danger";
-		var name = detail.HumanName ?? detail.Id;
+		var name = string.IsNullOrWhiteSpace(detail.DisplayName) ? detail.Id : detail.DisplayName;
 		<tr class="@st" onclick="openDetails('@detail.Id')">
 			<td>@ind</td>
 			<td>@detail.Timestamp.ToString("dd.MM.yy HH:mm:ss")</td>
