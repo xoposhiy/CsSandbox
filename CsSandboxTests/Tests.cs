@@ -14,8 +14,7 @@ namespace CsSandboxTests
 
 		private const string TlCode =
 			@"using System; using System.Collections.Generic; class Program { static void Main() { const int memory = 63 * 1024 * 1024; var a = new byte[memory]; for (var i = 0; i < 1000*1000*1000; ++i){ a[i % memory] = (byte)i; } }}";
-//		private const string Adress = "http://localhost:62992/";
-		private const string Adress = "http://kontur-labs02:9595/";
+		private const string Adress = "http://kontur-labs02/CsSandbox/";
 
 		[Test]
 		public static async void TestOk()
@@ -41,7 +40,7 @@ namespace CsSandboxTests
 		[ExpectedException(typeof(CsSandboxClientException.Unauthorized))]
 		public static async void TestUnauthorized()
 		{
-			var client = new CsSandboxClient("testUnauthorized", Adress);
+			var client = new CsSandboxClient(TimeSpan.FromSeconds(1), "testUnauthorized", Adress);
 			await client.CreateSubmit(Code, "");
 		}
 
@@ -49,7 +48,7 @@ namespace CsSandboxTests
 		[ExpectedException(typeof(CsSandboxClientException.SubmissionNotFound))]
 		public static async void TestSubmissionNotFound()
 		{
-			var client = new CsSandboxClient("tester", Adress);
+			var client = new CsSandboxClient(TimeSpan.FromSeconds(1), "tester", Adress);
 			await client.GetSubmissionStatus("incorrect");
 		}
 
@@ -57,10 +56,10 @@ namespace CsSandboxTests
 		[ExpectedException(typeof(CsSandboxClientException.Forbidden))]
 		public static async void TestForbidden()
 		{
-			var client = new CsSandboxClient("tester", Adress);
+			var client = new CsSandboxClient(TimeSpan.FromSeconds(1), "tester", Adress);
 			var submission = await client.CreateSubmit(Code, "");
 			var details = await submission.GetDetails();
-			client = new CsSandboxClient("tester2", Adress);
+			client = new CsSandboxClient(TimeSpan.FromSeconds(1), "tester2", Adress);
 			await client.GetSubmissionStatus(details.Id);
 		}
 
@@ -68,7 +67,7 @@ namespace CsSandboxTests
 		[Explicit]
 		public static async void TestManySubmissions()
 		{
-			var client = new CsSandboxClient("tester", Adress, 0);
+			var client = new CsSandboxClient(TimeSpan.FromSeconds(1), "tester", Adress, 0);
 			var submissions = new List<Submission>();
 			var startTime = DateTime.Now;
 			for (var i = 0; i < 100; ++i)
@@ -93,7 +92,7 @@ namespace CsSandboxTests
 
 		private static async Task<PublicSubmissionDetails> GetDetails(string code, string input)
 		{
-			var client = new CsSandboxClient("tester", Adress);
+			var client = new CsSandboxClient(TimeSpan.FromSeconds(1), "tester", Adress);
 			var submission = await client.CreateSubmit(code, input);
 			Assert.NotNull(submission);
 
