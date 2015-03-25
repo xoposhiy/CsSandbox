@@ -13,18 +13,19 @@
 			<th>Time</th>
 			<th>ID</th>
 			<th>State</th>
+			<th>Verdict</th>
 		</tr>
 	</thead>
 	@foreach (var detail in  Model.Submissions)
 	{
 		ind++;
-		var st = detail.Status == SubmissionStatus.Done ? "success" : "danger";
 		var name = string.IsNullOrWhiteSpace(detail.DisplayName) ? detail.Id : detail.DisplayName;
-		<tr class="@st" onclick="openDetails('@detail.Id')">
+		<tr class="@SubmissionClass(detail.Status, detail.Verdict)" onclick="openDetails('@detail.Id')" style="cursor: pointer">
 			<td>@ind</td>
 			<td>@detail.Timestamp.ToString("dd.MM.yy HH:mm:ss")</td>
 			<td>@name</td>
 			<td>@detail.Status.ToString()</td>
+			<td>@detail.Verdict.ToString()</td>
 		</tr>
 	}
 </table>
@@ -57,3 +58,23 @@
 		</div><!-- /.modal-content -->
 	</div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
+
+@helper SubmissionClass(SubmissionStatus status, Verdict verdict)
+{
+	if (status != SubmissionStatus.Done || verdict == Verdict.SandboxError)
+	{
+		@("danger")
+	}
+	else if (verdict == Verdict.Ok)
+	{
+		@("success")
+	}
+	else if (verdict == Verdict.CompilationError)
+	{
+		@("info")
+	}
+	else
+	{
+		@("warning")
+	}
+}
