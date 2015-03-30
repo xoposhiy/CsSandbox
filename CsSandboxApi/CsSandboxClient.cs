@@ -40,7 +40,15 @@ namespace CsSandboxApi
 				DisplayName = displayName
 			};
 
-			var response = await _httpClient.PostAsJsonAsync("CreateSubmission", model);
+			HttpResponseMessage response;
+			try
+			{
+				response = await _httpClient.PostAsJsonAsync("CreateSubmission", model);
+			}
+			catch (TaskCanceledException)
+			{
+				throw new RequestTimeLimit();
+			}
 
 			if (!response.IsSuccessStatusCode)
 			{
@@ -54,7 +62,17 @@ namespace CsSandboxApi
 		public async Task<SubmissionStatus> GetSubmissionStatus(string submissionId)
 		{
 			var uri = GetUriForSubmission("GetSubmissionStatus", submissionId);
-			var response = await _httpClient.GetAsync(uri);
+
+			HttpResponseMessage response;
+			try
+			{
+				response = await _httpClient.GetAsync(uri);
+			}
+			catch (TaskCanceledException)
+			{
+				return SubmissionStatus.RequestTimeLimit;
+			}
+
 			if (!response.IsSuccessStatusCode)
 			{
 				throw CsSandboxClientException.Create(response);
@@ -66,7 +84,17 @@ namespace CsSandboxApi
 		public async Task<PublicSubmissionDetails> GetSubmissionDetails(string submissionId)
 		{
 			var uri = GetUriForSubmission("GetSubmissionDetails", submissionId);
-			var response = await _httpClient.GetAsync(uri);
+
+			HttpResponseMessage response;
+			try
+			{
+				response = await _httpClient.GetAsync(uri);
+			}
+			catch (TaskCanceledException)
+			{
+				throw new RequestTimeLimit();
+			}
+
 			if (!response.IsSuccessStatusCode)
 			{
 				throw CsSandboxClientException.Create(response);

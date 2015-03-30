@@ -8,5 +8,6 @@
 		AccessDeny = 3,
 		Error = 4,
 		Running = 5,
+		RequestTimeLimit = 6
 	}
 }

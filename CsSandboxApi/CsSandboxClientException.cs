@@ -9,7 +9,7 @@ namespace CsSandboxApi
 		public readonly HttpStatusCode Status;
 		public readonly string Reason;
 
-		private CsSandboxClientException(HttpStatusCode status, string reason) : base(String.Format("{0}: {1}", status, reason))
+		protected CsSandboxClientException(HttpStatusCode status, string reason) : base(String.Format("{0}: {1}", status, reason))
 		{
 			Status = status;
 			Reason = reason;
@@ -60,6 +60,13 @@ namespace CsSandboxApi
 		public static CsSandboxClientException Create(HttpResponseMessage response)
 		{
 			return Create(response.StatusCode, response.ReasonPhrase);
+		}
+	}
+
+	public class RequestTimeLimit : CsSandboxClientException
+	{
+		public RequestTimeLimit() : base(HttpStatusCode.GatewayTimeout, "")
+		{
 		}
 	}
 }
