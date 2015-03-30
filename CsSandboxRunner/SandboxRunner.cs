@@ -51,13 +51,31 @@ namespace CsSandboxRunner
 			_result.AddCompilationInfo(assembly);
 
 			if (_result.IsCompilationError())
+			{
+				Remove(assembly);
 				return _result;
+			}
 
 			if (!_submission.NeedRun)
+			{
+				Remove(assembly);
 				return _result;
+			}
 			RunSandboxer(assembly);
 
+			Remove(assembly);
 			return _result;
+		}
+
+		private void Remove(CompilerResults assembly)
+		{
+			try
+			{
+				File.Delete(assembly.PathToAssembly);
+			}
+			catch
+			{
+			}
 		}
 
 
