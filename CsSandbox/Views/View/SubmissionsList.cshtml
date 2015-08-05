@@ -10,7 +10,8 @@
 	<thead>
 		<tr>
 			<th></th>
-			<th>Time</th>
+			<th>Timestamp</th>
+			<th>Elapsed</th>
 			<th>ID</th>
 			<th>State</th>
 			<th>Verdict</th>
@@ -23,6 +24,7 @@
 		<tr class="@SubmissionClass(detail.Status, detail.Verdict)" onclick="openDetails('@detail.Id')" style="cursor: pointer">
 			<td>@ind</td>
 			<td>@detail.Timestamp.ToString("dd.MM.yy HH:mm:ss")</td>
+			<td>@detail.Elapsed</td>
 			<td>@name</td>
 			<td>@detail.Status.ToString()</td>
 			<td>@detail.Verdict.ToString()</td>

@@ -96,7 +96,7 @@ namespace CsSandboxRunner
 
 		private void RunSandboxer(CompilerResults assembly)
 		{
-			var inputBytes = Encoding.UTF8.GetBytes(_submission.Input); 
+			var inputBytes = Encoding.UTF8.GetBytes(_submission.Input ?? ""); 
 			var input = Encoding.Default.GetString(inputBytes);
 
 			var startInfo = new ProcessStartInfo("CsSandboxer", String.Format("\"{0}\" {1}", Path.GetFullPath(assembly.PathToAssembly), _submission.Id))

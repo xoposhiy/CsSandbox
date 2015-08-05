@@ -21,7 +21,7 @@ namespace CsSandbox.Controllers
 		{
 			var submissions = _dataManager
 				.GetAllSubmission(Request.Cookies["token"], max, skip)
-				.Select(details => details.ToPublic());
+				.Select(details => details);
 			return PartialView(new SubmissionsListModel
 			{
 				Submissions = submissions

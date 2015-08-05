@@ -29,6 +29,9 @@ namespace CsSandbox.Models
 		[Index("ViewAll", 2)]
 		public DateTime Timestamp { get; set; }
 
+		[Index("ViewAll", 3)]
+		public TimeSpan? Elapsed { get; set; }
+
 		[Required]
 		public SubmissionStatus Status { get; set; }
 

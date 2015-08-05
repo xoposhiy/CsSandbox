@@ -40,6 +40,7 @@ namespace CsSandbox.DataContext
 				Status = SubmissionStatus.Waiting,
 				Verdict = Verdict.NA,
 				Timestamp = DateTime.Now,
+				Elapsed = null,
 				NeedRun = submission.NeedRun,
 				DisplayName = submission.DisplayName
 			};
@@ -77,6 +78,7 @@ namespace CsSandbox.DataContext
 			submission.Output = result.Output;
 			submission.Error = result.Error;
 			submission.Status = SubmissionStatus.Done;
+			submission.Elapsed = DateTime.Now - submission.Timestamp;
 			return submission;
 		}
 

@@ -1,5 +1,19 @@
 ﻿<div class="jumbotron">
     <h1>CsSandbox</h1>
     <p class="lead">CsSandbox is a service for run programs written on C#</p>
-    <p><a href="https://github.com/Tinkturianec/CsSandbox" class="btn btn-primary btn-large">Sources &raquo;</a> <a class="btn btn-default" href="https://github.com/Tinkturianec/CsSandbox/README.md">Readme &raquo;</a></p>
+	<p><a href="https://github.com/Tinkturianec/CsSandbox" class="btn btn-primary btn-large">Sources &raquo;</a> <a class="btn btn-default" href="https://github.com/Tinkturianec/CsSandbox/README.md">Readme &raquo;</a>
+	</p>
+	@using (Html.BeginForm("Run", "Home"))
+	{
+		<textarea name="code" rows="20" cols="60">
+class Program
+{
+	static void Main()
+	{
+	}
+}
+		</textarea>
+		<input class="btn btn-primary" type="submit" />
+	}
+
 </div>

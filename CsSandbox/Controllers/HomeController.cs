@@ -1,5 +1,7 @@
-﻿using System.Web;
+﻿using System.CodeDom;
+using System.Web;
 using System.Web.Mvc;
+using CsSandboxApi;
 
 namespace CsSandbox.Controllers
 {
@@ -10,7 +12,6 @@ namespace CsSandbox.Controllers
 		public ActionResult Index()
 		{
 			ViewBag.Title = "Home Page";
-
 			return View();
 		}
 
@@ -45,6 +46,21 @@ namespace CsSandbox.Controllers
 				Response.SetCookie(new HttpCookie("token"));
 			}
 			return RedirectToAction("Index", "Home");
+		}
+
+		public ActionResult Run(string code)
+		{
+			var token = Request.Cookies["token"];
+			if (token == null) return Index();
+			new DataManager().CreateSandbox(new SubmissionModel()
+			{
+				Token=token.Value,
+				Code=code,
+				Input = "",
+				DisplayName = "web",
+				NeedRun = true
+			});
+			return Content(code);
 		}
 	}
 }

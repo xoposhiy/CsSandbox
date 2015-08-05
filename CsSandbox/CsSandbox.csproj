@@ -29,6 +29,9 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\CsSandbox.XML</DocumentationFile>
+    <NoWarn>1591,1573</NoWarn>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -222,6 +225,10 @@
     <Compile Include="Migrations\201502171032113_RenameDisplayName.Designer.cs">
       <DependentUpon>201502171032113_RenameDisplayName.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\201508050452107_ElapsedTime.cs" />
+    <Compile Include="Migrations\201508050452107_ElapsedTime.Designer.cs">
+      <DependentUpon>201508050452107_ElapsedTime.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Configuration.cs" />
     <Compile Include="Models\LoginModel.cs" />
     <Compile Include="Models\Role.cs" />
@@ -342,6 +349,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\201502171032113_RenameDisplayName.resx">
       <DependentUpon>201502171032113_RenameDisplayName.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\201508050452107_ElapsedTime.resx">
+      <DependentUpon>201508050452107_ElapsedTime.cs</DependentUpon>
     </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>

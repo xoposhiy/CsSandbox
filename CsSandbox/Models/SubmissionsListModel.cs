@@ -5,7 +5,6 @@ namespace CsSandbox.Models
 {
 	public class SubmissionsListModel
 	{
-		public string Token ;
-		public IEnumerable<PublicSubmissionDetails> Submissions;
+		public IEnumerable<SubmissionDetails> Submissions;
 	}
 }
