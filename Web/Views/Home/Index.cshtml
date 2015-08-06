@@ -1,0 +1,29 @@
+﻿@model CsSandbox.Controllers.HomeViewModel
+@{
+	ViewBag.Title = "Home Page";	
+}
+<div class="jumbotron">
+	<h1>CsSandbox</h1>
+	<p class="lead">CsSandbox is a service for run programs written on C#</p>
+	<p>
+		<a href="https://github.com/Tinkturianec/CsSandbox" class="btn btn-primary btn-large">Sources &raquo;</a> <a class="btn btn-default" href="https://github.com/Tinkturianec/CsSandbox/README.md">Readme &raquo;</a>
+	</p>
+	@if (Model.Authenticated)
+	{
+		using (Html.BeginForm("Run", "Home"))
+		{
+			<textarea xml:space="preserve" name="code" rows="15" cols="80" font="Consolas">		 
+class Program
+{
+	static void Main()
+	{
+	}
+}
+			 </textarea>
+			<div>
+				<input class="btn btn-primary" type="submit" />
+			</div>
+		}
+	}
+
+</div>
