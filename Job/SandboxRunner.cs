@@ -15,7 +15,7 @@ namespace CsSandboxRunner
 	{
 		private readonly InternalSubmissionModel _submission;
 
-		private const int TimeLimitInSeconds = 1;
+		private const int TimeLimitInSeconds = 5;
 		private static readonly TimeSpan TimeLimit = new TimeSpan(0, 0, 0, TimeLimitInSeconds);
 		private static readonly TimeSpan IdleTimeLimit = new TimeSpan(0, 0, 0, 5 * TimeLimitInSeconds);
 

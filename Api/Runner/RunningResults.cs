@@ -10,7 +10,8 @@
 
 		public override string ToString()
 		{
-			return string.Format("Id: {0}, Verdict: {1}", Id, Verdict);
+			return string.Format("Id: {0}, Verdict: {1}: {2}", Id, Verdict, 
+				Verdict == Verdict.SandboxError ? Error : Output);
 		}
 	}
 }
